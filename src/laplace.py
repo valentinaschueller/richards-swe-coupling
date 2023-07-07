@@ -10,6 +10,8 @@ dt = 1e-2
 N = 5
 t_end = N * dt
 h = 3
+K = 1
+c = 1
 
 gridView = structuredGrid([-depth], [0], [20])
 
@@ -24,7 +26,9 @@ v = ufl.TestFunction(space)
 initial = depth / ufl.pi * ufl.sin(ufl.pi / depth * x[0]) + h
 psi_h.interpolate(initial)
 
-a = (ufl.dot((psi - psi_h_n) / dt, v) + ufl.inner(ufl.grad(psi), ufl.grad(v))) * ufl.dx
+a = (
+    ufl.dot(c * (psi - psi_h_n) / dt, v) + ufl.inner(K * ufl.grad(psi), ufl.grad(v))
+) * ufl.dx
 
 fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), 1, 0)) * ufl.ds
 # dbc_bottom = DirichletBC(space, 0, x[0] <= (-depth + 1e-8))
