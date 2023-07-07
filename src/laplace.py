@@ -23,15 +23,15 @@ gridView = structuredGrid([-L], [0], [20])
 space = lagrange(gridView, order=1)
 psi_h = space.interpolate(0, name="psi_h")
 
-z = SpatialCoordinate(space)
+x = SpatialCoordinate(space)
 psi = TrialFunction(space)
 v = TestFunction(space)
 
 a = (inner(grad(psi), grad(v))) * dx
 
-fbnd = (-1 * v * conditional(z[0] <= (-L + 1e-8), 1, 0)) * ds
+fbnd = (-1 * v * conditional(x[0] <= (-L + 1e-8), 1, 0)) * ds
 # dbc_bottom = DirichletBC(space, 0, z[0] <= (-L + 1e-8))
-dbc_top = DirichletBC(space, 5, z[0] >= (-1e-8))
+dbc_top = DirichletBC(space, 5, x[0] >= (-1e-8))
 
 mat, rhs = assemble([a == fbnd, dbc_top])
 
