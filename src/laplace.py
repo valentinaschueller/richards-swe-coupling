@@ -1,46 +1,42 @@
-import matplotlib.pyplot as plt
-from dune.fem import assemble
+import ufl
+from dune.fem.scheme import galerkin
 from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import DirichletBC
 from mpi4py import MPI  # necessary to avoid ParallelError from DUNE
-from scipy.sparse.linalg import spsolve as solver
-from ufl import (
-    SpatialCoordinate,
-    TestFunction,
-    TrialFunction,
-    conditional,
-    ds,
-    dx,
-    grad,
-    inner,
-)
 
-L = 1
+depth = 1
+dt = 1e-2
+N = 5
+t_end = N * dt
+h = 3
 
-gridView = structuredGrid([-L], [0], [20])
+gridView = structuredGrid([-depth], [0], [20])
 
 space = lagrange(gridView, order=1)
 psi_h = space.interpolate(0, name="psi_h")
+psi_h_n = psi_h.copy(name="previous")
 
-x = SpatialCoordinate(space)
-psi = TrialFunction(space)
-v = TestFunction(space)
+x = ufl.SpatialCoordinate(space)
+psi = ufl.TrialFunction(space)
+v = ufl.TestFunction(space)
 
-a = (inner(grad(psi), grad(v))) * dx
+initial = depth / ufl.pi * ufl.sin(ufl.pi / depth * x[0]) + h
+psi_h.interpolate(initial)
 
-fbnd = (-1 * v * conditional(x[0] <= (-L + 1e-8), 1, 0)) * ds
-# dbc_bottom = DirichletBC(space, 0, z[0] <= (-L + 1e-8))
-dbc_top = DirichletBC(space, 5, x[0] >= (-1e-8))
+a = (ufl.dot((psi - psi_h_n) / dt, v) + ufl.inner(ufl.grad(psi), ufl.grad(v))) * ufl.dx
 
-mat, rhs = assemble([a == fbnd, dbc_top])
+fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), 1, 0)) * ufl.ds
+# dbc_bottom = DirichletBC(space, 0, x[0] <= (-depth + 1e-8))
+dbc_top = DirichletBC(space, h, x[0] >= (-1e-8))
 
-A = mat.as_numpy
-b = rhs.as_numpy
-y = psi_h.as_numpy
-y[:] = solver(A, b)
+scheme = galerkin([a == fbnd, dbc_top], solver="cg")
+scheme.model.dt = dt
+scheme.model.time = 0
+
+while scheme.model.time < (t_end - 1e-6):
+    psi_h_n.assign(psi_h)
+    scheme.solve(target=psi_h)
+    scheme.model.time += scheme.model.dt
 
 psi_h.plot()
-
-plt.imshow(A.A)
-plt.show()
