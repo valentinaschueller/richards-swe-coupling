@@ -38,7 +38,7 @@ class Groundwater:
             + ufl.inner(self.K * ufl.grad(psi), ufl.grad(v))
         ) * ufl.dx
 
-        fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), 1, 0)) * ufl.ds
+        fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
         # dbc_bottom = DirichletBC(space, 0, x[0] <= (-depth + 1e-8))
         dbc_top = DirichletBC(space, self.h, x[0] >= (-1e-8))
 
