@@ -8,6 +8,7 @@ Simulate 1D groundwater flow coupled to an ODE for shallow water height, using D
   - MPI (e.g., OpenMPI)
   - [PETSc](https://petsc.org/release/)
 - [preCICE](https://github.com/precice/precice) + [pyprecice](https://pypi.org/project/pyprecice/)
+- [ProPlot](https://proplot.readthedocs.io/en/latest/index.html)
 
 ## Development Guidelines
 
