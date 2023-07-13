@@ -1,0 +1,49 @@
+<?xml version="1.0"?>
+
+<precice-configuration>
+
+  <solver-interface dimensions="3">
+
+    <data:scalar name="Height"/>
+    <data:scalar name="Flux"/>
+
+    <mesh name="GroundwaterMesh">
+      <use-data name="Height"/>
+      <use-data name="Flux"/>
+    </mesh>
+
+    <mesh name="RiverMesh">
+      <use-data name="Height"/>
+      <use-data name="Flux"/>
+    </mesh>
+
+    <participant name="GroundwaterSolver">
+      <use-mesh name="GroundwaterMesh" provide="yes"/>
+      <use-mesh name="RiverMesh" from="RiverSolver"/>
+      <write-data name="Flux" mesh="GroundwaterMesh"/>
+      <read-data  name="Height" mesh="GroundwaterMesh"/>
+      <mapping:nearest-neighbor direction="write" from="GroundwaterMesh"
+                                to="RiverMesh" constraint="conservative"/>
+      <mapping:nearest-neighbor direction="read" from="RiverMesh"
+                                to="GroundwaterMesh" constraint="consistent"/>
+    </participant>
+
+    <participant name="RiverSolver">
+      <use-mesh name="RiverMesh" provide="yes"/>
+      <write-data name="Height" mesh="RiverMesh"/>
+      <read-data  name="Flux" mesh="RiverMesh"/>
+    </participant>
+
+    <m2n:sockets from="GroundwaterSolver" to="RiverSolver"/>
+
+    <coupling-scheme:serial-explicit>
+      <participants first="GroundwaterSolver" second="RiverSolver"/>
+      <max-time-windows value="1" />
+      <time-window-size value="1.0" />
+      <exchange data="Flux" mesh="GroundwaterMesh" from="GroundwaterSolver" to="RiverSolver"/>
+      <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver"/>
+    </coupling-scheme:serial-explicit>
+
+  </solver-interface>
+
+</precice-configuration>
