@@ -10,6 +10,20 @@ Simulate 1D groundwater flow coupled to an ODE for shallow water height, using D
 - [preCICE](https://github.com/precice/precice) + [pyprecice](https://pypi.org/project/pyprecice/)
 - [ProPlot](https://proplot.readthedocs.io/en/latest/index.html)
 
+## Usage
+
+Open two separate terminals and run:
+
+```bash
+> cd src
+> python3 groundwater.py
+```
+
+```bash
+> cd src
+> python3 river.py
+```
+
 ## Development Guidelines
 
 ### Code formatting
