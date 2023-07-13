@@ -5,7 +5,7 @@ Simulate 1D groundwater flow coupled to an ODE for shallow water height, using D
 ## Dependencies
 
 - [dune-fem](https://pypi.org/project/dune-fem/), which requires, among other things
-  - MPI (e.g., OpenMPI)
+  - MPI (e.g., [OpenMPI](https://www.open-mpi.org/)) and [mpi4py](https://mpi4py.readthedocs.io/en/stable/)
   - [PETSc](https://petsc.org/release/)
 - [preCICE](https://github.com/precice/precice) + [pyprecice](https://pypi.org/project/pyprecice/)
 - [ProPlot](https://proplot.readthedocs.io/en/latest/index.html)
