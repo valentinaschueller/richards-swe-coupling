@@ -5,7 +5,6 @@ from dune.fem.scheme import galerkin
 from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
-from mpi4py import MPI  # necessary to avoid ParallelError from DUNE
 
 
 class Groundwater:
