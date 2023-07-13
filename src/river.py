@@ -7,18 +7,18 @@ import proplot as pplt
 
 class River:
     def __init__(self, h_0: float, t_0: float) -> None:
-        self.h = h_0
-        self.t = t_0
+        self.height = h_0
+        self.time = t_0
         self.result = [h_0]
-        self.time = [t_0]
+        self.t_axis = [t_0]
 
-    def step(self, dt: float, flux: float) -> float:
-        self.h += dt * flux
-        self.t += dt
+    def solve(self, dt: float, flux: float) -> float:
+        self.height += dt * flux
+        self.time += dt
 
     def end_time_step(self) -> None:
-        self.result.append(self.h)
-        self.time.append(self.t)
+        self.result.append(self.height)
+        self.t_axis.append(self.time)
 
 
 participant_name = "RiverSolver"
@@ -35,38 +35,37 @@ dimensions = interface.get_dimensions()
 vertex = np.zeros(dimensions)
 vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 
-data_id_h = interface.get_data_id("Height", mesh_id)
-data_id_v = interface.get_data_id("Flux", mesh_id)
+height_id = interface.get_data_id("Height", mesh_id)
+flux_id = interface.get_data_id("Flux", mesh_id)
 
-t = 0
+t_0 = 0
 t_end = 1
 N = 10
-solver_dt = (t_end - t) / N
+solver_dt = (t_end - t_0) / N
 h_0 = 1
 
-river = River(h_0, t)
+river = River(h_0, t_0)
 
 precice_dt = interface.initialize()
 
 if interface.is_action_required(precice.action_write_initial_data()):
-    interface.write_scalar_data(data_id_v, vertex_id, 0)
-    interface.write_scalar_data(data_id_h, vertex_id, h_0)
+    interface.write_scalar_data(height_id, vertex_id, h_0)
     interface.mark_action_fulfilled(precice.action_write_initial_data())
 
 interface.initialize_data()
 
 while interface.is_coupling_ongoing():
-    # solver_dt = river.begin_time_step()
     dt = min(solver_dt, precice_dt)
-    read_data = interface.read_scalar_data(data_id_v, vertex_id)
-    flux = read_data
-    river.step(dt, flux)
-    write_data = river.h
-    interface.write_scalar_data(data_id_h, vertex_id, write_data)
+
+    flux = interface.read_scalar_data(flux_id, vertex_id)
+    river.solve(dt, flux)
+    interface.write_scalar_data(height_id, vertex_id, river.height)
+
     precice_dt = interface.advance(dt)
     river.end_time_step()
+
 interface.finalize()
 
 _, ax = pplt.subplots()
-ax.plot(river.time, river.result)
+ax.plot(river.t_axis, river.result)
 pplt.show()
