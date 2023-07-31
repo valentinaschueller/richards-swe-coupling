@@ -83,5 +83,5 @@ while interface.is_coupling_ongoing():
 interface.finalize()
 
 _, ax = pplt.subplots()
-ax.plot(river.t_axis, river.result)
+ax.plot(river.t_axis, river.result, marker=".")
 pplt.show()
