@@ -20,6 +20,14 @@ class River:
         self.result.append(self.height)
         self.t_axis.append(self.time)
 
+    def save_state(self) -> None:
+        self._time_checkpoint = self.time
+        self._height_checkpoint = self.height
+
+    def load_state(self) -> None:
+        self.time = self._time_checkpoint
+        self.height = self._height_checkpoint
+
 
 participant_name = "RiverSolver"
 config_file = Path("precice-config.xml")
@@ -55,6 +63,9 @@ if interface.is_action_required(precice.action_write_initial_data()):
 interface.initialize_data()
 
 while interface.is_coupling_ongoing():
+    if interface.is_action_required(precice.action_write_iteration_checkpoint()):
+        river.save_state()
+        interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
     dt = min(solver_dt, precice_dt)
 
     flux = interface.read_scalar_data(flux_id, vertex_id)
@@ -62,10 +73,15 @@ while interface.is_coupling_ongoing():
     interface.write_scalar_data(height_id, vertex_id, river.height)
 
     precice_dt = interface.advance(dt)
-    river.end_time_step()
+
+    if interface.is_action_required(precice.action_read_iteration_checkpoint()):
+        river.load_state()
+        interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
+    else:
+        river.end_time_step()
 
 interface.finalize()
 
 _, ax = pplt.subplots()
-ax.plot(river.t_axis, river.result)
+ax.plot(river.t_axis, river.result, marker=".")
 pplt.show()

@@ -60,6 +60,9 @@ class Groundwater:
         self.t_axis = [t_0]
         self.result = self.psi_h.as_numpy[np.newaxis]  # add a dimension
 
+        self._time_checkpoint = t_0
+        self._psi_checkpoint = self.psi_h.copy(name="checkpoint")
+
         self.flux = self._compute_flux()
 
     def _compute_flux(self) -> None:
@@ -77,6 +80,14 @@ class Groundwater:
     def end_time_step(self) -> None:
         self.result = np.append(self.result, self.psi_h.as_numpy[np.newaxis], axis=0)
         self.t_axis.append(self.scheme.model.time)
+
+    def save_state(self) -> None:
+        self._time_checkpoint = self.scheme.model.time
+        self._psi_checkpoint.assign(self.psi_h)
+
+    def load_state(self) -> None:
+        self.scheme.model.time = self._time_checkpoint
+        self.psi_h.assign(self._psi_checkpoint)
 
 
 participant_name = "GroundwaterSolver"
@@ -106,6 +117,9 @@ precice_dt = interface.initialize()
 interface.initialize_data()
 
 while interface.is_coupling_ongoing():
+    if interface.is_action_required(precice.action_write_iteration_checkpoint()):
+        groundwater.save_state()
+        interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
     dt = min(solver_dt, precice_dt)
 
     groundwater.height.value = interface.read_scalar_data(height_id, vertex_id)
@@ -113,7 +127,12 @@ while interface.is_coupling_ongoing():
     interface.write_scalar_data(flux_id, vertex_id, groundwater.flux)
 
     precice_dt = interface.advance(dt)
-    groundwater.end_time_step()
+
+    if interface.is_action_required(precice.action_read_iteration_checkpoint()):
+        groundwater.load_state()
+        interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
+    else:
+        groundwater.end_time_step()
 
 interface.finalize()
 

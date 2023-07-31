@@ -36,13 +36,15 @@
 
     <m2n:sockets from="GroundwaterSolver" to="RiverSolver"/>
 
-    <coupling-scheme:serial-explicit>
+    <coupling-scheme:serial-implicit>
       <participants first="GroundwaterSolver" second="RiverSolver"/>
       <max-time-windows value="10" />
       <time-window-size value="0.1" />
       <exchange data="Flux" mesh="RiverMesh" from="GroundwaterSolver" to="RiverSolver"/>
       <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver"/>
-    </coupling-scheme:serial-explicit>
+      <relative-convergence-measure limit="1e-3" data="Height" mesh="RiverMesh"/>
+      <max-iterations value="15" />
+    </coupling-scheme:serial-implicit>
 
   </solver-interface>
 
