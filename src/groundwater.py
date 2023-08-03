@@ -136,6 +136,11 @@ while interface.is_coupling_ongoing():
 
 interface.finalize()
 
-_, ax = pplt.subplots()
+fig, ax = pplt.subplots()
 ax.plot(groundwater.x_axis, groundwater.result.T, marker=".")
-pplt.show()
+ax.format(
+    xlabel="z",
+    ylabel=r"$\psi(z)$",
+    title=r"Groundwater potential $\psi$ at different $t$",
+)
+fig.savefig("groundwater.png")

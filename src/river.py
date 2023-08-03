@@ -82,6 +82,11 @@ while interface.is_coupling_ongoing():
 
 interface.finalize()
 
-_, ax = pplt.subplots()
+fig, ax = pplt.subplots()
 ax.plot(river.t_axis, river.result, marker=".")
-pplt.show()
+ax.format(
+    xlabel="t",
+    ylabel="$h(t)$",
+    title="River water height over time",
+)
+fig.savefig("river.png")
