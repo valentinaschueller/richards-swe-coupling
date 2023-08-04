@@ -44,6 +44,9 @@
       <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver"/>
       <relative-convergence-measure limit="1e-3" data="Height" mesh="RiverMesh"/>
       <max-iterations value="15" />
+      <acceleration:constant>
+        <relaxation value="1" />
+      </acceleration:constant>
     </coupling-scheme:serial-implicit>
 
   </solver-interface>
