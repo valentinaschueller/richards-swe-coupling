@@ -109,3 +109,6 @@ cython_debug/
 **/*-events.json
 **/*-iterations.log
 **/*-convergence.log
+
+# Simulation output
+*.xml
