@@ -4,6 +4,8 @@ import numpy as np
 import precice
 import proplot as pplt
 
+import setup_simulation as settings
+
 
 class River:
     def __init__(self, h_0: float, t_0: float) -> None:
@@ -46,13 +48,9 @@ vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 height_id = interface.get_data_id("Height", mesh_id)
 flux_id = interface.get_data_id("Flux", mesh_id)
 
-t_0 = 0
-t_end = 1
-N = 10
-solver_dt = (t_end - t_0) / N
 h_0 = 1
 
-river = River(h_0, t_0)
+river = River(h_0, settings.t_0)
 
 precice_dt = interface.initialize()
 
@@ -66,7 +64,7 @@ while interface.is_coupling_ongoing():
     if interface.is_action_required(precice.action_write_iteration_checkpoint()):
         river.save_state()
         interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
-    dt = min(solver_dt, precice_dt)
+    dt = min(settings.dt, precice_dt)
 
     flux = interface.read_scalar_data(flux_id, vertex_id)
     river.solve(dt, flux)
