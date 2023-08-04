@@ -11,6 +11,9 @@ tolerance = 1e-3
 max_iterations = 15
 omega = 1
 
+precice_config_template = Path("precice-config.xml.j2")
+precice_config = Path("precice-config.xml")
+
 
 def get_template(template_path: Path) -> jinja2.Template:
     """get Jinja2 template file"""
@@ -35,9 +38,6 @@ def render(destination: Path, template: Path) -> None:
 
 
 if __name__ == "__main__":
-    src_directory = Path("src")
-    precice_config_template = src_directory / "precice-config.xml.j2"
-    precice_config = src_directory / "precice-config.xml"
     assert precice_config_template.exists()
-
     render(precice_config, precice_config_template)
+    assert precice_config.exists()

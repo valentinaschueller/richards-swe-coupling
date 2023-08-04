@@ -32,11 +32,13 @@ class River:
 
 
 participant_name = "RiverSolver"
-config_file = Path("precice-config.xml")
 solver_process_index = 0
 solver_process_size = 1
 interface = precice.Interface(
-    participant_name, str(config_file), solver_process_index, solver_process_size
+    participant_name,
+    str(settings.precice_config),
+    solver_process_index,
+    solver_process_size,
 )
 
 mesh_name = "RiverMesh"
