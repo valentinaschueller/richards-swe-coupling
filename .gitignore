@@ -112,3 +112,5 @@ cython_debug/
 
 # Simulation output
 *.xml
+*.nc
+*.png

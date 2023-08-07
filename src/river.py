@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import precice
-import proplot as pplt
+import xarray as xr
 
 import setup_simulation as settings
 
@@ -29,6 +29,10 @@ class River:
     def load_state(self) -> None:
         self.time = self._time_checkpoint
         self.height = self._height_checkpoint
+
+    def save_output(self, target: Path) -> None:
+        output = xr.DataArray(self.result, {"t": self.t_axis}, name="h")
+        output.to_netcdf(target)
 
 
 participant_name = "RiverSolver"
@@ -81,7 +85,4 @@ while interface.is_coupling_ongoing():
         river.end_time_step()
 
 interface.finalize()
-
-_, ax = pplt.subplots()
-ax.plot(river.t_axis, river.result, marker=".")
-pplt.show()
+river.save_output("river.nc")
