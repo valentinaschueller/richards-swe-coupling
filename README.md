@@ -9,8 +9,22 @@ Simulate 1D groundwater flow coupled to an ODE for shallow water height, using D
   - [PETSc](https://petsc.org/release/)
 - [preCICE](https://github.com/precice/precice) + [pyprecice](https://pypi.org/project/pyprecice/)
 - [ProPlot](https://proplot.readthedocs.io/en/latest/index.html)
+- [Jinja2](https://pypi.org/project/Jinja2/)
 
 ## Usage
+
+### Set up a simulation
+
+You can adjust the simulation parameters in `src/setup_simulation.py`.
+Then, run
+```bash
+> cd src
+> python3 setup_simulation.py
+```
+
+This will generate the preCICE configuration file.
+
+### Run the coupled code
 
 Open two separate terminals and run:
 

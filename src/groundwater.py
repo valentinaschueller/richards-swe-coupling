@@ -10,6 +10,8 @@ from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
+import setup_simulation as settings
+
 
 class Groundwater:
     def __init__(
@@ -91,11 +93,13 @@ class Groundwater:
 
 
 participant_name = "GroundwaterSolver"
-config_file = Path("precice-config.xml")
 solver_process_index = 0
 solver_process_size = 1
 interface = precice.Interface(
-    participant_name, str(config_file), solver_process_index, solver_process_size
+    participant_name,
+    str(settings.precice_config),
+    solver_process_index,
+    solver_process_size,
 )
 
 mesh_name = "GroundwaterMesh"
@@ -107,11 +111,7 @@ vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 height_id = interface.get_data_id("Height", mesh_id)
 flux_id = interface.get_data_id("Flux", mesh_id)
 
-t_0 = 0
-t_end = 1
-N = 10
-solver_dt = (t_end - t_0) / N
-groundwater = Groundwater(dt=solver_dt)
+groundwater = Groundwater(dt=settings.dt, t_0=settings.t_0)
 
 precice_dt = interface.initialize()
 interface.initialize_data()
@@ -120,7 +120,7 @@ while interface.is_coupling_ongoing():
     if interface.is_action_required(precice.action_write_iteration_checkpoint()):
         groundwater.save_state()
         interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
-    dt = min(solver_dt, precice_dt)
+    dt = min(settings.dt, precice_dt)
 
     groundwater.height.value = interface.read_scalar_data(height_id, vertex_id)
     groundwater.solve(dt)
