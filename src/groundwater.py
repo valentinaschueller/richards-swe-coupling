@@ -2,8 +2,8 @@ from pathlib import Path
 
 import numpy as np
 import precice
-import proplot as pplt
 import ufl
+import xarray as xr
 from dune.fem.function import uflFunction
 from dune.fem.scheme import galerkin
 from dune.fem.space import lagrange
@@ -11,6 +11,7 @@ from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
 import setup_simulation as settings
+from plot_results import plot_groundwater
 
 
 class Groundwater:
@@ -91,6 +92,17 @@ class Groundwater:
         self.scheme.model.time = self._time_checkpoint
         self.psi_h.assign(self._psi_checkpoint)
 
+    def save_output(self, target: Path) -> None:
+        output = xr.DataArray(
+            self.result,
+            {
+                "t": self.t_axis,
+                "z": self.x_axis,
+            },
+            name="psi",
+        )
+        output.to_netcdf(target)
+
 
 participant_name = "GroundwaterSolver"
 solver_process_index = 0
@@ -135,12 +147,5 @@ while interface.is_coupling_ongoing():
         groundwater.end_time_step()
 
 interface.finalize()
-
-fig, ax = pplt.subplots()
-ax.plot(groundwater.x_axis, groundwater.result.T, marker=".")
-ax.format(
-    xlabel="z",
-    ylabel=r"$\psi(z)$",
-    title=r"Groundwater potential $\psi$ at different $t$",
-)
-fig.savefig("groundwater.png")
+groundwater.save_output("groundwater.nc")
+plot_groundwater("groundwater.nc", "groundwater.png")
