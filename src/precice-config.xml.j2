@@ -36,18 +36,20 @@
 
     <m2n:sockets from="GroundwaterSolver" to="RiverSolver"/>
 
-    <coupling-scheme:serial-implicit>
+    <coupling-scheme:{{coupling_scheme}}>
       <participants first="GroundwaterSolver" second="RiverSolver"/>
-      <max-time-windows value="10" />
-      <time-window-size value="0.1" />
+      <max-time-windows value="{{N}}" />
+      <time-window-size value="{{dt}}" />
       <exchange data="Flux" mesh="RiverMesh" from="GroundwaterSolver" to="RiverSolver"/>
       <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver"/>
-      <relative-convergence-measure limit="1e-3" data="Height" mesh="RiverMesh"/>
-      <max-iterations value="15" />
+      {%- if "implicit" in coupling_scheme %}
+      <relative-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
+      <max-iterations value="{{max_iterations}}" />
       <acceleration:constant>
-        <relaxation value="1" />
+        <relaxation value="{{omega}}" />
       </acceleration:constant>
-    </coupling-scheme:serial-implicit>
+      {%- endif %}
+    </coupling-scheme:{{coupling_scheme}}>
 
   </solver-interface>
 

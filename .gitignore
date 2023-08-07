@@ -110,5 +110,6 @@ cython_debug/
 **/*-iterations.log
 **/*-convergence.log
 
-# Plots
+# Simulation output
+*.xml
 *.png
