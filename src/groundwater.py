@@ -54,15 +54,20 @@ class Groundwater:
             + ufl.inner(self.K * ufl.grad(psi), ufl.grad(v))
         ) * ufl.dx
 
+        # Set boundary conditions
+        rhs = 0
         dbc_top = DirichletBC(self.space, self.height, x[0] >= (-1e-8))
+        dirichlet = [dbc_top]
+        if bc_type == BoundaryConditions.dirichlet:
+            dbc_bottom_value = Constant(bc_value, name="dbc_bottom_value")
+            dbc_bottom = DirichletBC(
+                self.space, dbc_bottom_value, x[0] <= (-depth + 1e-8)
+            )
+            dirichlet.append(dbc_bottom)
         if bc_type == BoundaryConditions.no_flux:
-            fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
-            self.scheme = galerkin([a == fbnd, dbc_top], solver="cg")
-        elif bc_type == BoundaryConditions.free_drainage:
-            self.scheme = galerkin([a == 0, dbc_top], solver="cg")
-        elif bc_type == BoundaryConditions.dirichlet:
-            dbc_bottom = DirichletBC(self.space, bc_value, x[0] <= (-depth + 1e-8))
-            self.scheme = galerkin([a == 0, dbc_top, dbc_bottom], solver="cg")
+            rhs = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
+
+        self.scheme = galerkin([a == rhs, *dirichlet], solver="cg")
 
         self.scheme.model.dt = dt
         self.scheme.model.time = t_0
