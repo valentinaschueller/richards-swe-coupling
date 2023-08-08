@@ -14,7 +14,7 @@ max_iterations = 15
 omega = 1
 
 bc_type = BoundaryConditions.no_flux
-bc_value = 1.0
+bc_value = 1.0  # only used for Dirichlet BC
 
 precice_config_template = Path("precice-config.xml.j2")
 precice_config = Path("precice-config.xml")
