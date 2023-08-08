@@ -11,6 +11,7 @@ from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
 import setup_simulation as settings
+from enums import BoundaryConditions
 from plot_results import plot_groundwater
 
 
@@ -23,6 +24,8 @@ class Groundwater:
         depth: float = 1.0,
         h: float = 1.0,
         t_0: float = 0.0,
+        bc_type: BoundaryConditions = BoundaryConditions.no_flux,
+        bc_value: float = 0.0,
     ) -> None:
         gridView = structuredGrid([-depth], [0], [20])
 
@@ -51,11 +54,15 @@ class Groundwater:
             + ufl.inner(self.K * ufl.grad(psi), ufl.grad(v))
         ) * ufl.dx
 
-        fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
-        # dbc_bottom = DirichletBC(space, 0, x[0] <= (-depth + 1e-8))
         dbc_top = DirichletBC(self.space, self.height, x[0] >= (-1e-8))
-
-        self.scheme = galerkin([a == fbnd, dbc_top], solver="cg")
+        if bc_type == BoundaryConditions.no_flux:
+            fbnd = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
+            self.scheme = galerkin([a == fbnd, dbc_top], solver="cg")
+        elif bc_type == BoundaryConditions.free_drainage:
+            self.scheme = galerkin([a == 0, dbc_top], solver="cg")
+        elif bc_type == BoundaryConditions.dirichlet:
+            dbc_bottom = DirichletBC(self.space, bc_value, x[0] <= (-depth + 1e-8))
+            self.scheme = galerkin([a == 0, dbc_top, dbc_bottom], solver="cg")
 
         self.scheme.model.dt = dt
         self.scheme.model.time = t_0
@@ -123,7 +130,12 @@ vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 height_id = interface.get_data_id("Height", mesh_id)
 flux_id = interface.get_data_id("Flux", mesh_id)
 
-groundwater = Groundwater(dt=settings.dt, t_0=settings.t_0)
+groundwater = Groundwater(
+    dt=settings.dt,
+    t_0=settings.t_0,
+    bc_type=settings.bc_type,
+    bc_value=settings.bc_value,
+)
 
 precice_dt = interface.initialize()
 interface.initialize_data()
