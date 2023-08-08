@@ -5,6 +5,7 @@ import precice
 import xarray as xr
 
 import setup_simulation as settings
+from plot_results import plot_river
 
 
 class River:
@@ -86,3 +87,4 @@ while interface.is_coupling_ongoing():
 
 interface.finalize()
 river.save_output("river.nc")
+plot_river("river.nc", "river.png")

@@ -2,6 +2,8 @@ from pathlib import Path
 
 import jinja2
 
+from enums import BoundaryConditions
+
 coupling_scheme = "serial-implicit"
 t_0 = 0
 t_end = 1
@@ -10,6 +12,9 @@ dt = (t_end - t_0) / N
 tolerance = 1e-3
 max_iterations = 15
 omega = 1
+
+bc_type = BoundaryConditions.no_flux
+bc_value = 1.0  # only used for Dirichlet BC
 
 precice_config_template = Path("precice-config.xml.j2")
 precice_config = Path("precice-config.xml")
