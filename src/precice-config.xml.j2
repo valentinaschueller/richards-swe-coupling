@@ -41,9 +41,9 @@
       <max-time-windows value="{{N}}" />
       <time-window-size value="{{dt}}" />
       <exchange data="Flux" mesh="RiverMesh" from="GroundwaterSolver" to="RiverSolver"/>
-      <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver"/>
+      <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver" initialize="yes"/>
       {%- if "implicit" in coupling_scheme %}
-      <relative-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
+      <absolute-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
       <max-iterations value="{{max_iterations}}" />
       <acceleration:constant>
         <relaxation value="{{omega}}" />
