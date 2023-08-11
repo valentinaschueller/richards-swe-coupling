@@ -26,16 +26,11 @@ This will generate the preCICE configuration file.
 
 ### Run the coupled code
 
-Open two separate terminals and run:
+To run a simulation, open a terminal and call:
 
 ```bash
 > cd src
-> python3 groundwater.py
-```
-
-```bash
-> cd src
-> python3 river.py
+> python3 groundwater.py & river.py
 ```
 
 ## Development Guidelines
