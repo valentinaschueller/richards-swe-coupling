@@ -55,14 +55,12 @@ vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 height_id = interface.get_data_id("Height", mesh_id)
 flux_id = interface.get_data_id("Flux", mesh_id)
 
-h_0 = 1
-
-river = River(h_0, settings.t_0)
+river = River(settings.h_0, settings.t_0)
 
 precice_dt = interface.initialize()
 
 if interface.is_action_required(precice.action_write_initial_data()):
-    interface.write_scalar_data(height_id, vertex_id, h_0)
+    interface.write_scalar_data(height_id, vertex_id, settings.h_0)
     interface.mark_action_fulfilled(precice.action_write_initial_data())
 
 interface.initialize_data()

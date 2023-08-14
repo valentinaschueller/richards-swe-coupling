@@ -13,6 +13,8 @@ tolerance = 1e-3
 max_iterations = 15
 omega = 1
 
+h_0 = 1.0
+
 bc_type = BoundaryConditions.no_flux
 bc_value = 1.0  # only used for Dirichlet BC
 

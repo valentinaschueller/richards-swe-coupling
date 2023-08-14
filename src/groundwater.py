@@ -22,7 +22,7 @@ class Groundwater:
         K: float = 1.0,
         dt: float = 1e-2,
         depth: float = 1.0,
-        h: float = 1.0,
+        h_0: float = 1.0,
         t_0: float = 0.0,
         bc_type: BoundaryConditions = BoundaryConditions.no_flux,
         bc_value: float = 0.0,
@@ -36,7 +36,7 @@ class Groundwater:
         self.c = Constant(c, name="c")
         self.K = Constant(K, name="K")
         self.dt = Constant(dt, name="dt")
-        self.height = Constant(h, name="height")
+        self.height = Constant(h_0, name="height")
 
         x = ufl.SpatialCoordinate(self.space)
         psi = ufl.TrialFunction(self.space)
@@ -73,12 +73,12 @@ class Groundwater:
         self.scheme.model.time = t_0
 
         self.t_axis = [t_0]
-        self.result = self.psi_h.as_numpy[np.newaxis]  # add a dimension
+        self.result = self.psi_h.as_numpy[np.newaxis].copy()  # add a dimension
 
         self._time_checkpoint = t_0
         self._psi_checkpoint = self.psi_h.copy(name="checkpoint")
 
-        self.flux = self._compute_flux()
+        self._compute_flux()
 
     def _compute_flux(self) -> None:
         grad_psi_sfc = self.space.interpolate(ufl.grad(self.psi_h)).as_numpy[-1]
@@ -93,7 +93,9 @@ class Groundwater:
         self._compute_flux()
 
     def end_time_step(self) -> None:
-        self.result = np.append(self.result, self.psi_h.as_numpy[np.newaxis], axis=0)
+        self.result = np.append(
+            self.result, self.psi_h.as_numpy[np.newaxis].copy(), axis=0
+        )
         self.t_axis.append(self.scheme.model.time)
 
     def save_state(self) -> None:
@@ -140,6 +142,7 @@ groundwater = Groundwater(
     t_0=settings.t_0,
     bc_type=settings.bc_type,
     bc_value=settings.bc_value,
+    h_0=settings.h_0,
 )
 
 precice_dt = interface.initialize()
