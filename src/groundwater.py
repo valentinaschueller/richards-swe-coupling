@@ -12,7 +12,7 @@ from dune.ufl import Constant, DirichletBC
 
 import setup_simulation as settings
 from enums import BoundaryConditions
-from plot_results import plot_groundwater
+from process_results import plot_groundwater
 
 
 class Groundwater:

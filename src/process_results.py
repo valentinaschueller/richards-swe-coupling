@@ -1,5 +1,7 @@
 from pathlib import Path
 
+import numpy as np
+import pandas as pd
 import proplot as pplt
 import xarray as xr
 
@@ -26,6 +28,18 @@ def plot_groundwater(source: Path, target: Path):
         title=r"Groundwater potential $\psi$ at different $t$",
     )
     fig.savefig(target)
+
+
+def compute_convergence_rate(convergence_log: Path):
+    df = pd.read_csv(convergence_log, delim_whitespace=True)
+    time_windows = df["TimeWindow"].drop_duplicates().to_numpy()
+    cvg_rates = np.zeros(len(time_windows))
+    for index, tw in enumerate(time_windows):
+        resabs_values = df.loc[df["TimeWindow"] == tw]["ResAbs(Height)"].to_numpy()
+        cvg_rates[index] = np.mean(resabs_values[1:] / resabs_values[:-1])
+
+    with open(convergence_log, "a") as file:
+        file.write(f"\n\nConvergence Rate: {np.mean(cvg_rates)}\n")
 
 
 if __name__ == "__main__":
