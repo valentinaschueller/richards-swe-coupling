@@ -38,8 +38,7 @@ def compute_convergence_rate(convergence_log: Path):
         resabs_values = df.loc[df["TimeWindow"] == tw]["ResAbs(Height)"].to_numpy()
         cvg_rates[index] = np.mean(resabs_values[1:] / resabs_values[:-1])
 
-    with open(convergence_log, "a") as file:
-        file.write(f"\n\nConvergence Rate: {np.mean(cvg_rates)}\n")
+    return np.mean(cvg_rates)
 
 
 if __name__ == "__main__":
