@@ -36,55 +36,60 @@ class River:
         output.to_netcdf(target)
 
 
-participant_name = "RiverSolver"
-solver_process_index = 0
-solver_process_size = 1
-interface = precice.Interface(
-    participant_name,
-    str(settings.precice_config),
-    solver_process_index,
-    solver_process_size,
-)
+def simulate_river():
+    participant_name = "RiverSolver"
+    solver_process_index = 0
+    solver_process_size = 1
+    interface = precice.Interface(
+        participant_name,
+        str(settings.precice_config),
+        solver_process_index,
+        solver_process_size,
+    )
 
-mesh_name = "RiverMesh"
-mesh_id = interface.get_mesh_id(mesh_name)
-dimensions = interface.get_dimensions()
-vertex = np.zeros(dimensions)
-vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
+    mesh_name = "RiverMesh"
+    mesh_id = interface.get_mesh_id(mesh_name)
+    dimensions = interface.get_dimensions()
+    vertex = np.zeros(dimensions)
+    vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 
-height_id = interface.get_data_id("Height", mesh_id)
-flux_id = interface.get_data_id("Flux", mesh_id)
+    height_id = interface.get_data_id("Height", mesh_id)
+    flux_id = interface.get_data_id("Flux", mesh_id)
 
-river = River(settings.h_0, settings.t_0)
+    river = River(settings.h_0, settings.t_0)
 
-precice_dt = interface.initialize()
+    precice_dt = interface.initialize()
 
-if interface.is_action_required(precice.action_write_initial_data()):
-    interface.write_scalar_data(height_id, vertex_id, settings.h_0)
-    interface.mark_action_fulfilled(precice.action_write_initial_data())
+    if interface.is_action_required(precice.action_write_initial_data()):
+        interface.write_scalar_data(height_id, vertex_id, settings.h_0)
+        interface.mark_action_fulfilled(precice.action_write_initial_data())
 
-interface.initialize_data()
+    interface.initialize_data()
 
-while interface.is_coupling_ongoing():
-    if interface.is_action_required(precice.action_write_iteration_checkpoint()):
-        river.save_state()
-        interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
-    dt = min(settings.dt, precice_dt)
+    while interface.is_coupling_ongoing():
+        if interface.is_action_required(precice.action_write_iteration_checkpoint()):
+            river.save_state()
+            interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
+        dt = min(settings.dt, precice_dt)
 
-    flux = interface.read_scalar_data(flux_id, vertex_id)
-    river.solve(dt, flux)
-    interface.write_scalar_data(height_id, vertex_id, river.height)
+        flux = interface.read_scalar_data(flux_id, vertex_id)
+        river.solve(dt, flux)
+        interface.write_scalar_data(height_id, vertex_id, river.height)
 
-    precice_dt = interface.advance(dt)
+        precice_dt = interface.advance(dt)
 
-    if interface.is_action_required(precice.action_read_iteration_checkpoint()):
-        river.load_state()
-        interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
-    else:
-        river.end_time_step()
+        if interface.is_action_required(precice.action_read_iteration_checkpoint()):
+            river.load_state()
+            interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
+        else:
+            river.end_time_step()
 
-interface.finalize()
-river.save_output("river.nc")
-plot_river("river.nc", "river.png")
+    interface.finalize()
+    river.save_output("river.nc")
 
-compute_convergence_rate("precice-RiverSolver-convergence.log")
+
+if __name__ == "__main__":
+    simulate_river()
+    plot_river("river.nc", "river.png")
+    cvg_rate = compute_convergence_rate("precice-RiverSolver-convergence.log")
+    print(f"Convergence Rate: {cvg_rate}")
