@@ -9,9 +9,14 @@ t_0 = 0
 t_end = 1
 N = 10
 dt = (t_end - t_0) / N
+M = 20
 tolerance = 1e-3
 max_iterations = 15
 omega = 1
+
+K = 1.0
+c = 1.0
+L = 1.0
 
 h_0 = 1.0
 
