@@ -33,6 +33,13 @@ To run a simulation, open a terminal and call:
 > python3 groundwater.py & river.py
 ```
 
+### Return results from theoretical analysis
+
+```bash
+> cd src
+> python3 analysis.py
+```
+
 ## Development Guidelines
 
 ### Code formatting
