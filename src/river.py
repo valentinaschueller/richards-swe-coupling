@@ -5,7 +5,6 @@ import precice
 import xarray as xr
 
 import setup_simulation as settings
-from process_results import compute_convergence_rate, plot_river
 
 
 class River:
@@ -86,10 +85,3 @@ def simulate_river():
 
     interface.finalize()
     river.save_output("river.nc")
-
-
-if __name__ == "__main__":
-    simulate_river()
-    plot_river("river.nc", "river.png")
-    cvg_rate = compute_convergence_rate("precice-RiverSolver-convergence.log")
-    print(f"Convergence Rate: {cvg_rate}")

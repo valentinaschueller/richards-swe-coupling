@@ -13,16 +13,7 @@ Simulate 1D groundwater flow coupled to an ODE for shallow water height, using D
 
 ## Usage
 
-### Set up a simulation
-
 You can adjust the simulation parameters in `src/setup_simulation.py`.
-Then, run
-```bash
-> cd src
-> python3 setup_simulation.py
-```
-
-This will generate the preCICE configuration file.
 
 ### Run the coupled code
 
@@ -30,7 +21,7 @@ To run a simulation, open a terminal and call:
 
 ```bash
 > cd src
-> python3 groundwater.py & river.py
+> python3 coupled.py
 ```
 
 ### Return results from theoretical analysis

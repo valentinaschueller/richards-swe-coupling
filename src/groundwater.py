@@ -12,7 +12,6 @@ from dune.ufl import Constant, DirichletBC
 
 import setup_simulation as settings
 from enums import BoundaryConditions
-from process_results import plot_groundwater
 
 
 class Groundwater:
@@ -183,8 +182,3 @@ def simulate_groundwater():
 
     interface.finalize()
     groundwater.save_output("groundwater.nc")
-
-
-if __name__ == "__main__":
-    simulate_groundwater()
-    plot_groundwater("groundwater.nc", "groundwater.png")
