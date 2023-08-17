@@ -33,7 +33,9 @@ To run a simulation, open a terminal and call:
 
 ### Code formatting
 
-We use [black](https://black.readthedocs.io/en/stable/), [isort](https://pycqa.github.io/isort/), and [flake8](https://flake8.pycqa.org/en/latest/) for code formatting and linting, in this order:
-1. Run `isort src/*.py` to sort imports.
-2. Run `black src/*.py` to format code.
-3. Run `flake8 src/*.py`. This should execute without errors or warnings.
+We use [black](https://black.readthedocs.io/en/stable/), [isort](https://pycqa.github.io/isort/), and [flake8](https://flake8.pycqa.org/en/latest/) for code formatting and linting.
+To use all three at once, run:
+
+```bash
+> isort src/*.py; black src/*.py; flake8 src/*.py
+```
