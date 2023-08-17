@@ -19,8 +19,8 @@ def run_coupled_simulation():
 
 if __name__ == "__main__":
     run_coupled_simulation()
-    plot_groundwater("src/groundwater.nc", "src/groundwater.png")
-    plot_river("src/river.nc", "src/river.png")
-    cvg_rate = compute_convergence_rate("src/precice-RiverSolver-convergence.log")
+    plot_groundwater("groundwater.nc", "groundwater.png")
+    plot_river("river.nc", "river.png")
+    cvg_rate = compute_convergence_rate("precice-RiverSolver-convergence.log")
     # print in boldface
     print("\033[1m" + f"Measured Convergence Rate: {cvg_rate}" + "\033[0m")

@@ -40,7 +40,6 @@ class Params:
         self.precice_config = Path(self.precice_config)
         self.precice_config_template = Path(self.precice_config_template)
         self.bc_type = BoundaryCondition(self.bc_type)
-        assert self.precice_config.exists()
         assert self.precice_config_template.exists()
 
 
