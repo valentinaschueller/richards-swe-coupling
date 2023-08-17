@@ -70,15 +70,11 @@ class Groundwater:
         self._compute_flux()
 
     def _compute_flux(self) -> None:
-        M = (self.dz * self.c.value / 6) * np.array([1, 2])
-        A = self.K.value / (3 * self.dz) * np.array([-1, 1])
+        M = (self.c.value / 6) * np.array([1, 2])
+        A = self.K.value * self.dt / (self.dz**2) * np.array([-1, 1])
         psi_now = self.psi_h.as_numpy[-2:]
         psi_n = self.psi_h_n.as_numpy[-2:]
-        v_s = -(
-            np.dot(M, (psi_now - psi_n) / self.dt.value)
-            + np.dot(A, psi_now)
-            + self.K.value
-        )
+        v_s = -(np.dot(M, (psi_now - psi_n)) + np.dot(A, psi_now) + self.K.value)
         self.flux = v_s
 
     def solve(self, dt: float) -> None:
