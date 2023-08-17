@@ -4,16 +4,15 @@ import numpy as np
 import precice
 import xarray as xr
 
-import setup_simulation as settings
-from process_results import compute_convergence_rate, plot_river
+from setup_simulation import Params
 
 
 class River:
-    def __init__(self, h_0: float, t_0: float) -> None:
-        self.height = h_0
-        self.time = t_0
-        self.result = [h_0]
-        self.t_axis = [t_0]
+    def __init__(self, params: Params) -> None:
+        self.height = params.h_0
+        self.time = params.t_0
+        self.result = [params.h_0]
+        self.t_axis = [params.t_0]
 
     def solve(self, dt: float, flux: float) -> float:
         self.height += dt * flux
@@ -36,13 +35,13 @@ class River:
         output.to_netcdf(target)
 
 
-def simulate_river():
+def simulate_river(params: Params):
     participant_name = "RiverSolver"
     solver_process_index = 0
     solver_process_size = 1
     interface = precice.Interface(
         participant_name,
-        str(settings.precice_config),
+        str(params.precice_config),
         solver_process_index,
         solver_process_size,
     )
@@ -56,12 +55,12 @@ def simulate_river():
     height_id = interface.get_data_id("Height", mesh_id)
     flux_id = interface.get_data_id("Flux", mesh_id)
 
-    river = River(settings.h_0, settings.t_0)
+    river = River(params)
 
     precice_dt = interface.initialize()
 
     if interface.is_action_required(precice.action_write_initial_data()):
-        interface.write_scalar_data(height_id, vertex_id, settings.h_0)
+        interface.write_scalar_data(height_id, vertex_id, params.h_0)
         interface.mark_action_fulfilled(precice.action_write_initial_data())
 
     interface.initialize_data()
@@ -70,7 +69,7 @@ def simulate_river():
         if interface.is_action_required(precice.action_write_iteration_checkpoint()):
             river.save_state()
             interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
-        dt = min(settings.dt, precice_dt)
+        dt = min(params.dt, precice_dt)
 
         flux = interface.read_scalar_data(flux_id, vertex_id)
         river.solve(dt, flux)
@@ -86,10 +85,3 @@ def simulate_river():
 
     interface.finalize()
     river.save_output("river.nc")
-
-
-if __name__ == "__main__":
-    simulate_river()
-    plot_river("river.nc", "river.png")
-    cvg_rate = compute_convergence_rate("precice-RiverSolver-convergence.log")
-    print(f"Convergence Rate: {cvg_rate}")

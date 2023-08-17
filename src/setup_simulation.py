@@ -1,25 +1,46 @@
+from dataclasses import dataclass, field
+from enum import Enum
 from pathlib import Path
 
 import jinja2
+from dacite import from_dict
+from ruamel.yaml import YAML
 
-from enums import BoundaryConditions
 
-coupling_scheme = "serial-implicit"
-t_0 = 0
-t_end = 1
-N = 10
-dt = (t_end - t_0) / N
-tolerance = 1e-3
-max_iterations = 15
-omega = 1
+class BoundaryCondition(Enum):
+    free_drainage = "free drainage"
+    no_flux = "no flux"
+    dirichlet = "dirichlet"
 
-h_0 = 1.0
 
-bc_type = BoundaryConditions.no_flux
-bc_value = 1.0  # only used for Dirichlet BC
+@dataclass
+class Params:
+    tolerance: float
+    max_iterations: int
+    coupling_scheme: str
+    omega: float
+    t_0: float
+    t_end: float
+    N: int
+    M: int
+    K: float
+    c: float
+    L: float
+    h_0: float
+    precice_config: str | Path
+    precice_config_template: str | Path
+    bc_type: str
+    dirichlet_value: float = 0.0
+    dt: float = field(init=False)
+    dz: float = field(init=False)
 
-precice_config_template = Path("precice-config.xml.j2")
-precice_config = Path("precice-config.xml")
+    def __post_init__(self):
+        self.dt = (self.t_end - self.t_0) / self.N
+        self.dz = self.L / self.M
+        self.precice_config = Path(self.precice_config)
+        self.precice_config_template = Path(self.precice_config_template)
+        self.bc_type = BoundaryCondition(self.bc_type)
+        assert self.precice_config_template.exists()
 
 
 def get_template(template_path: Path) -> jinja2.Template:
@@ -29,22 +50,25 @@ def get_template(template_path: Path) -> jinja2.Template:
     return environment.get_template(template_path.name)
 
 
-def render(destination: Path, template: Path) -> None:
-    jinja_template = get_template(template)
-    with open(destination, "w") as precice_config:
+def render(params: Params) -> None:
+    jinja_template = get_template(params.precice_config_template)
+    with open(params.precice_config, "w") as precice_config:
         precice_config.write(
             jinja_template.render(
-                coupling_scheme=coupling_scheme,
-                N=N,
-                dt=dt,
-                tolerance=tolerance,
-                max_iterations=max_iterations,
-                omega=omega,
+                coupling_scheme=params.coupling_scheme,
+                N=params.N,
+                dt=params.dt,
+                tolerance=params.tolerance,
+                max_iterations=params.max_iterations,
+                omega=params.omega,
             )
         )
 
 
-if __name__ == "__main__":
-    assert precice_config_template.exists()
-    render(precice_config, precice_config_template)
-    assert precice_config.exists()
+def load_params(yaml_file: Path | str) -> Params:
+    yaml = YAML(typ="safe")
+    if isinstance(yaml_file, str):
+        yaml_file = Path(yaml_file)
+    params = yaml.load(yaml_file)
+    params = from_dict(data_class=Params, data=params)
+    return params
