@@ -1,6 +1,6 @@
 import numpy as np
 
-import setup_simulation as params
+from setup_simulation import load_params
 
 
 def get_a(K: float, c: float, dt: float, dz: float) -> float:
@@ -58,6 +58,7 @@ def compute_coupling_behavior(
 
 
 if __name__ == "__main__":
+    params = load_params("params.yaml")
     alpha, S, omega_opt = compute_coupling_behavior(
         params.K, params.c, params.L, params.dt, params.M
     )

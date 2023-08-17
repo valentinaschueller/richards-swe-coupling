@@ -10,33 +10,21 @@ from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
-import setup_simulation as settings
-from enums import BoundaryConditions
+from setup_simulation import BoundaryCondition, Params
 
 
 class Groundwater:
-    def __init__(
-        self,
-        c: float = 1.0,
-        K: float = 1.0,
-        dt: float = 1e-2,
-        depth: float = 1.0,
-        h_0: float = 1.0,
-        t_0: float = 0.0,
-        bc_type: BoundaryConditions = BoundaryConditions.no_flux,
-        bc_value: float = 0.0,
-        M: int = 10,
-    ) -> None:
-        gridView = structuredGrid([-depth], [0], [M])
+    def __init__(self, params: Params) -> None:
+        gridView = structuredGrid([-params.L], [0], [params.M])
 
         self.space = lagrange(gridView, order=1)
         self.psi_h = self.space.interpolate(0, name="psi_h")
-        self.dz = depth / M
+        self.dz = params.L / params.M
 
-        self.c = Constant(c, name="c")
-        self.K = Constant(K, name="K")
-        self.dt = Constant(dt, name="dt")
-        self.height = Constant(h_0, name="height")
+        self.c = Constant(params.c, name="c")
+        self.K = Constant(params.K, name="K")
+        self.dt = Constant(params.dt, name="dt")
+        self.height = Constant(params.h_0, name="height")
 
         x = ufl.SpatialCoordinate(self.space)
         psi = ufl.TrialFunction(self.space)
@@ -46,7 +34,7 @@ class Groundwater:
         x_func = uflFunction(gridView, name="x", order=1, ufl=x)
         self.x_axis = self.space.interpolate(x_func).as_numpy
 
-        initial = depth / ufl.pi * ufl.sin(ufl.pi / depth * x[0]) + self.height
+        initial = params.L / ufl.pi * ufl.sin(ufl.pi / params.L * x[0]) + self.height
         self.psi_h.interpolate(initial)
         self.psi_h_n = self.psi_h.copy(name="previous")
 
@@ -59,24 +47,24 @@ class Groundwater:
         rhs = 0
         dbc_top = DirichletBC(self.space, self.height, x[0] >= (-1e-8))
         dirichlet = [dbc_top]
-        if bc_type == BoundaryConditions.dirichlet:
-            dbc_bottom_value = Constant(bc_value, name="dbc_bottom_value")
+        if params.bc_type == BoundaryCondition.dirichlet:
+            dbc_bottom_value = Constant(params.dirichlet_value, name="dbc_bottom_value")
             dbc_bottom = DirichletBC(
-                self.space, dbc_bottom_value, x[0] <= (-depth + 1e-8)
+                self.space, dbc_bottom_value, x[0] <= (-params.L + 1e-8)
             )
             dirichlet.append(dbc_bottom)
-        if bc_type == BoundaryConditions.no_flux:
-            rhs = (-1 * v * ufl.conditional(x[0] <= (-depth + 1e-8), -1, 0)) * ufl.ds
+        if params.bc_type == BoundaryCondition.no_flux:
+            rhs = (-1 * v * ufl.conditional(x[0] <= (-params.L + 1e-8), -1, 0)) * ufl.ds
 
         self.scheme = galerkin([a == rhs, *dirichlet], solver="cg")
 
-        self.scheme.model.dt = dt
-        self.scheme.model.time = t_0
+        self.scheme.model.dt = params.dt
+        self.scheme.model.time = params.t_0
 
-        self.t_axis = [t_0]
+        self.t_axis = [params.t_0]
         self.result = self.psi_h.as_numpy[np.newaxis].copy()  # add a dimension
 
-        self._time_checkpoint = t_0
+        self._time_checkpoint = params.t_0
         self._psi_checkpoint = self.psi_h.copy(name="checkpoint")
 
         self._compute_flux()
@@ -127,13 +115,13 @@ class Groundwater:
         output.to_netcdf(target)
 
 
-def simulate_groundwater():
+def simulate_groundwater(params: Params):
     participant_name = "GroundwaterSolver"
     solver_process_index = 0
     solver_process_size = 1
     interface = precice.Interface(
         participant_name,
-        str(settings.precice_config),
+        str(params.precice_config),
         solver_process_index,
         solver_process_size,
     )
@@ -147,17 +135,7 @@ def simulate_groundwater():
     height_id = interface.get_data_id("Height", mesh_id)
     flux_id = interface.get_data_id("Flux", mesh_id)
 
-    groundwater = Groundwater(
-        c=settings.c,
-        K=settings.K,
-        dt=settings.dt,
-        depth=settings.L,
-        h_0=settings.h_0,
-        t_0=settings.t_0,
-        bc_type=settings.bc_type,
-        bc_value=settings.bc_value,
-        M=settings.M,
-    )
+    groundwater = Groundwater(params)
 
     precice_dt = interface.initialize()
     interface.initialize_data()
@@ -166,7 +144,7 @@ def simulate_groundwater():
         if interface.is_action_required(precice.action_write_iteration_checkpoint()):
             groundwater.save_state()
             interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
-        dt = min(settings.dt, precice_dt)
+        dt = min(params.dt, precice_dt)
 
         groundwater.height.value = interface.read_scalar_data(height_id, vertex_id)
         groundwater.solve(dt)
