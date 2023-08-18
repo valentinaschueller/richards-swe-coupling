@@ -4,11 +4,11 @@ from setup_simulation import load_params
 
 
 def get_a(K: float, c: float, dt: float, dz: float) -> float:
-    return 2 / 3 * c + 2 * K * dt / (dz**2)
+    return 2 / 3 * c * dz + 2 * K * dt / dz
 
 
 def get_b(K: float, c: float, dt: float, dz: float) -> float:
-    return c / 6 - K * dt / (dz**2)
+    return c / 6 * dz - K * dt / dz
 
 
 def get_alpha(a: float, b: float, L: float, M: int, dz: float) -> float:
@@ -21,7 +21,7 @@ def get_alpha(a: float, b: float, L: float, M: int, dz: float) -> float:
 
 
 def get_S(a: float, b: float, alpha: float, dz: float) -> float:
-    S = dz * (b**2 * alpha - 0.5 * a)
+    S = b**2 * alpha - 0.5 * a
     return S
 
 
