@@ -1,6 +1,6 @@
 import numpy as np
 
-from src.setup_simulation import load_params
+from coupling.setup_simulation import load_params
 
 
 def get_a(K: float, c: float, dt: float, dz: float) -> float:

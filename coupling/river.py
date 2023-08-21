@@ -4,7 +4,7 @@ import numpy as np
 import precice
 import xarray as xr
 
-from src.setup_simulation import Params
+from coupling.setup_simulation import Params
 
 
 class River:

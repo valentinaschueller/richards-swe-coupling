@@ -1,9 +1,13 @@
 from multiprocessing import Process
 
-from src.groundwater import simulate_groundwater
-from src.process_results import compute_convergence_rate, plot_groundwater, plot_river
-from src.river import simulate_river
-from src.setup_simulation import load_params, render
+from coupling.groundwater import simulate_groundwater
+from coupling.process_results import (
+    compute_convergence_rate,
+    plot_groundwater,
+    plot_river,
+)
+from coupling.river import simulate_river
+from coupling.setup_simulation import load_params, render
 
 
 def run_coupled_simulation():
