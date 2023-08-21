@@ -36,8 +36,12 @@ def compute_convergence_rate(convergence_log: Path):
     cvg_rates = np.zeros(len(time_windows))
     for index, tw in enumerate(time_windows):
         resabs_values = df.loc[df["TimeWindow"] == tw]["ResAbs(Height)"].to_numpy()
+        if len(resabs_values) == 1:
+            cvg_rates[index] = np.nan
+            continue
         cvg_rates[index] = np.mean(resabs_values[1:] / resabs_values[:-1])
 
+    cvg_rates = np.ma.masked_invalid(cvg_rates)
     return np.mean(cvg_rates)
 
 
