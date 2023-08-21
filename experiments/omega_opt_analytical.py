@@ -2,6 +2,7 @@ from pathlib import Path
 
 import numpy as np
 import proplot as pplt
+
 from coupling.analysis import compute_coupling_behavior
 
 plot_dir = Path("plots")
@@ -23,12 +24,12 @@ omega_opt = np.array(
 )
 for i in range(len(dts)):
     ax.semilogx(
-        dzs, omega_opt[i, :], label=f"$\Delta t=$ {dts[i]}", cycle="tab20b", marker="."
+        dzs, omega_opt[i, :], label=rf"$\Delta t=$ {dts[i]}", cycle="tab20b", marker="."
     )
 ax.format(
     title=f"K = {K}, c = {c}, L = {L}",
-    xlabel="Grid size $\Delta z$",
-    ylabel="$\omega_\mathrm{opt}$",
+    xlabel=r"Grid size $\Delta z$",
+    ylabel=r"$\omega_\mathrm{opt}$",
     xformatter="sci",
 )
 fig.legend(ncols=1)
@@ -39,12 +40,12 @@ fig.suptitle(r"Optimal relaxation parameter $\omega_\mathrm{opt}$")
 
 for i in range(len(dzs)):
     ax.semilogx(
-        dts, omega_opt[:, i], label=f"$\Delta z=$ {dzs[i]}", cycle="tab20b", marker="."
+        dts, omega_opt[:, i], label=rf"$\Delta z=$ {dzs[i]}", cycle="tab20b", marker="."
     )
 ax.format(
     title=f"K = {K}, c = {c}, L = {L}",
-    xlabel="Time step $\Delta t$",
-    ylabel="$\omega_\mathrm{opt}$",
+    xlabel=r"Time step $\Delta t$",
+    ylabel=r"$\omega_\mathrm{opt}$",
     xformatter="sci",
 )
 fig.legend(ncols=1)

@@ -3,7 +3,7 @@ from pathlib import Path
 import numpy as np
 import proplot as pplt
 
-from coupling.analysis import get_a, get_b, get_S, get_alpha
+from coupling.analysis import get_a, get_alpha, get_b, get_S
 
 plot_dir = Path("plots")
 plot_dir.mkdir(exist_ok=True)
@@ -28,10 +28,10 @@ for i in range(len(dts)):
 fig, ax = pplt.subplots()
 fig.suptitle(f"K = {K}, c = {c}, L = {L}")
 for i in range(len(dts)):
-    ax.plot(dzs, S[i], label=f"$\Delta t=$ {dts[i]}", cycle="tab20b", marker=".")
+    ax.plot(dzs, S[i], label=rf"$\Delta t=$ {dts[i]}", cycle="tab20b", marker=".")
 ax.format(
     # title=rf"$S$ for $\Delta t$ decreasing, $\Delta z$ = {dz}",
-    xlabel="Grid size $\Delta z$",
+    xlabel=r"Grid size $\Delta z$",
     ylabel="S",
     xformatter="sci",
     xscale="log",
@@ -43,10 +43,12 @@ fig, ax = pplt.subplots()
 fig.suptitle(f"K = {K}, c = {c}, L = {L}")
 
 for i in range(len(dzs)):
-    ax.semilogx(dts, S[:, i], label=f"$\Delta z=$ {dzs[i]}", cycle="tab20b", marker=".")
+    ax.semilogx(
+        dts, S[:, i], label=rf"$\Delta z=$ {dzs[i]}", cycle="tab20b", marker="."
+    )
 ax.format(
     # title=rf"$S$ for $\Delta t$ decreasing, $\Delta z$ = {dz}",
-    xlabel="Time step $\Delta t$",
+    xlabel=r"Time step $\Delta t$",
     ylabel="S",
     xformatter="sci",
     xscale="log",
