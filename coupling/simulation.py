@@ -1,13 +1,18 @@
 from multiprocessing import Process
+from pathlib import Path
 
-from groundwater import simulate_groundwater
-from process_results import compute_convergence_rate, plot_groundwater, plot_river
-from river import simulate_river
-from setup_simulation import load_params, render
+from coupling.groundwater import simulate_groundwater
+from coupling.process_results import (
+    compute_convergence_rate,
+    plot_groundwater,
+    plot_river,
+)
+from coupling.river import simulate_river
+from coupling.setup_simulation import load_params, render
 
 
-def run_coupled_simulation():
-    params = load_params("params.yaml")
+def run_coupled_simulation(yaml_file: str | Path = "params.yaml"):
+    params = load_params(yaml_file)
     render(params)
     groundwater_proc = Process(target=simulate_groundwater, args=[params])
     river_proc = Process(target=simulate_river, args=[params])

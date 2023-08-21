@@ -20,16 +20,26 @@ You can adjust the simulation parameters in `params.yaml`.
 To run a simulation, open a terminal and call:
 
 ```bash
-> python3 src/coupled.py
+> python3 coupling/simulation.py
 ```
 
 ### Return results from theoretical analysis
 
 ```bash
-> python3 src/analysis.py
+> python3 coupling/analysis.py
 ```
 
 ## Development Guidelines
+
+### Tests
+
+We use [pytest](https://docs.pytest.org/) for testing.
+To run the test suite, start by installing the package locally:
+
+```bash
+> pip install --user -e . # (optional) flags for a local, editable installation
+> pytest
+```
 
 ### Code formatting
 
@@ -37,5 +47,5 @@ We use [black](https://black.readthedocs.io/en/stable/), [isort](https://pycqa.g
 To use all three at once, run:
 
 ```bash
-> isort src/*.py; black src/*.py; flake8 src/*.py
+> isort coupling/*.py; black coupling/*.py; flake8 coupling/*.py
 ```

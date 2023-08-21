@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=59.7", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["coupling"]
+
+[project]
+name = "richards-swe"
+version = "0.1"
+authors = [
+    { name = "Valentina Schueller", email = "valentina.schueller@gmail.com" },
+]
+description = "Simulate 1D groundwater flow coupled to water height"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "dune-fem",
+    "pyprecice",
+    "ruamel.yaml",
+    "xarray",
+    "jinja2",
+    "pandas",
+    "proplot",
+]
+[project.optional-dependencies]
+tests = ["pytest"]
+all = ["richards-swe[tests]"]
+
+
+[project.urls]
+"Homepage" = "https://github.com/valentinaschueller/richards-swe-coupling"
+"Bug Tracker" = "https://github.com/valentinaschueller/richards-swe-coupling/issues"

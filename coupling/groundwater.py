@@ -10,7 +10,7 @@ from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
-from setup_simulation import BoundaryCondition, Params
+from coupling.setup_simulation import BoundaryCondition, Params
 
 
 class Groundwater:
