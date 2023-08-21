@@ -114,3 +114,4 @@ cython_debug/
 *.xml
 *.nc
 *.png
+*.pdf

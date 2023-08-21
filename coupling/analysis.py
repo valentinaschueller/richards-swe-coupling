@@ -29,6 +29,10 @@ def get_omega_opt(S: float) -> float:
     return 1 / (1 - S)
 
 
+def get_sigma(omega: float, S: float) -> float:
+    return omega * S + (1 - omega)
+
+
 def compute_coupling_behavior(
     K: float, c: float, L: float, dt: float, M: int
 ) -> tuple[float, float, float]:
