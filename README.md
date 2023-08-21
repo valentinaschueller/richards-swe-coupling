@@ -31,6 +31,16 @@ To run a simulation, open a terminal and call:
 
 ## Development Guidelines
 
+### Tests
+
+We use [pytest](https://docs.pytest.org/) for testing.
+To run the test suite, start by installing the package locally:
+
+```bash
+> pip install --user -e . # (optional) flags for a local, editable installation
+> pytest
+```
+
 ### Code formatting
 
 We use [black](https://black.readthedocs.io/en/stable/), [isort](https://pycqa.github.io/isort/), and [flake8](https://flake8.pycqa.org/en/latest/) for code formatting and linting.
