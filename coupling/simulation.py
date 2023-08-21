@@ -1,5 +1,4 @@
 from multiprocessing import Process
-from pathlib import Path
 
 from coupling.groundwater import simulate_groundwater
 from coupling.process_results import (
@@ -8,11 +7,10 @@ from coupling.process_results import (
     plot_river,
 )
 from coupling.river import simulate_river
-from coupling.setup_simulation import load_params, render
+from coupling.setup_simulation import Params, load_params, render
 
 
-def run_coupled_simulation(yaml_file: str | Path = "params.yaml"):
-    params = load_params(yaml_file)
+def run_coupled_simulation(params: Params) -> None:
     render(params)
     groundwater_proc = Process(target=simulate_groundwater, args=[params])
     river_proc = Process(target=simulate_river, args=[params])
@@ -23,7 +21,8 @@ def run_coupled_simulation(yaml_file: str | Path = "params.yaml"):
 
 
 if __name__ == "__main__":
-    run_coupled_simulation()
+    params = load_params("params.yaml")
+    run_coupled_simulation(params)
     plot_groundwater("groundwater.nc", "groundwater.png")
     plot_river("river.nc", "river.png")
     cvg_rate = compute_convergence_rate("precice-RiverSolver-convergence.log")
