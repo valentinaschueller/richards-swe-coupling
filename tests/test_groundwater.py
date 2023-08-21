@@ -1,6 +1,7 @@
-from coupling.setup_simulation import load_params
-from coupling.groundwater import Groundwater
 import ufl
+
+from coupling.groundwater import Groundwater
+from coupling.setup_simulation import load_params
 
 
 def _grad_based_flux(groundwater: Groundwater):
