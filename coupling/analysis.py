@@ -22,7 +22,7 @@ def get_alpha(a: float, b: float, L: float, M: int, dz: float) -> float:
 
 def get_S(a: float, b: float, alpha: float, dz: float) -> float:
     S = b**2 * alpha - 0.5 * a
-    return S
+    return float(S)
 
 
 def get_omega_opt(S: float) -> float:
