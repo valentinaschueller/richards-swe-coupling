@@ -56,7 +56,7 @@ class Groundwater:
         if params.bc_type == BoundaryCondition.no_flux:
             rhs = (-1 * v * ufl.conditional(x[0] <= (-params.L + 1e-8), -1, 0)) * ufl.ds
 
-        self.scheme = galerkin([a == rhs, *dirichlet], solver="cg")
+        self.scheme = galerkin([a == self.dt * rhs, *dirichlet], solver="cg")
 
         self.scheme.model.dt = params.dt
         self.scheme.model.time = params.t_0
