@@ -34,7 +34,7 @@ class Groundwater:
         x_func = uflFunction(gridView, name="x", order=1, ufl=x)
         self.x_axis = self.space.interpolate(x_func).as_numpy
 
-        initial = params.L / ufl.pi * ufl.sin(ufl.pi / params.L * x[0]) + self.height
+        initial = (self.height - params.dirichlet_value) / params.L * x[0] + self.height
         self.psi_h.interpolate(initial)
         self.psi_h_n = self.psi_h.copy(name="previous")
 
