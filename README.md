@@ -44,8 +44,8 @@ To run the test suite, start by installing the package locally:
 ### Code formatting
 
 We use [black](https://black.readthedocs.io/en/stable/), [isort](https://pycqa.github.io/isort/), and [flake8](https://flake8.pycqa.org/en/latest/) for code formatting and linting.
-To use all three at once, run:
+To use all three at once, run the provided formatting script:
 
 ```bash
-> isort coupling/*.py; black coupling/*.py; flake8 coupling/*.py
+> source ./format_code.sh
 ```
