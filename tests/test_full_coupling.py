@@ -58,3 +58,43 @@ def test_bc_sensitivity():
     assert abs(cvg_rate_nhom_dbc - analytical_cvg_rate) < 1e-8
     assert abs(cvg_rate_free_drainage - analytical_cvg_rate) < 1e-1
     assert abs(cvg_rate_no_flux - analytical_cvg_rate) < 1e-1
+
+
+def test_bc_sensitivity_grid_size():
+    yaml_file = "tests/test_params.yaml"
+    params = load_params(yaml_file)
+    cvg_logfile = "precice-RiverSolver-convergence.log"
+
+    S = compute_coupling_behavior(params.K, params.c, params.L, params.dt, params.M)[1]
+    analytical_cvg_rate = abs(S)
+
+    params.bc_type = BoundaryCondition.no_flux
+    run_coupled_simulation(params)
+    cvg_rate_no_flux = compute_convergence_rate(cvg_logfile)
+
+    params.bc_type = BoundaryCondition.free_drainage
+    run_coupled_simulation(params)
+    cvg_rate_free_drainage = compute_convergence_rate(cvg_logfile)
+
+    error_coarse_fd = abs(cvg_rate_free_drainage - analytical_cvg_rate)
+    error_coarse_nf = abs(cvg_rate_no_flux - analytical_cvg_rate)
+
+    params.M = 5 * params.M
+    params.dz = 0.2 * params.dz
+
+    S = compute_coupling_behavior(params.K, params.c, params.L, params.dt, params.M)[1]
+    analytical_cvg_rate = abs(S)
+
+    params.bc_type = BoundaryCondition.no_flux
+    run_coupled_simulation(params)
+    cvg_rate_no_flux = compute_convergence_rate(cvg_logfile)
+
+    params.bc_type = BoundaryCondition.free_drainage
+    run_coupled_simulation(params)
+    cvg_rate_free_drainage = compute_convergence_rate(cvg_logfile)
+
+    error_fine_fd = abs(cvg_rate_free_drainage - analytical_cvg_rate)
+    error_fine_nf = abs(cvg_rate_no_flux - analytical_cvg_rate)
+
+    assert (error_fine_fd - error_coarse_fd) < 1e-4
+    assert (error_fine_nf - error_coarse_nf) < 1e-4
