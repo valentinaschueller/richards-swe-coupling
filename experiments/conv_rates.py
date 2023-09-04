@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import numpy as np
 import proplot as pplt
 
@@ -7,6 +9,11 @@ from coupling.setup_simulation import load_params
 from coupling.simulation import run_coupled_simulation
 
 if __name__ == "__main__":
+    plotting_dir = Path("plots")
+    plotting_dir.mkdir(exist_ok=True)
+    omegas = np.array(
+        [1e-3, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.73, 0.75, 0.76, 0.78, 0.8, 0.9, 1.0]
+    )
     omegas = np.linspace(0.001, 1, 21)
     convergence_rates = np.zeros(omegas.shape)
     sigma_analysis = np.zeros(omegas.shape)
@@ -24,15 +31,29 @@ if __name__ == "__main__":
             "precice-RiverSolver-convergence.log"
         )
 
-    fig, ax = pplt.subplots()
-    ax.plot(omegas, convergence_rates, color="k", marker=".", label=r"experimental CR")
-    ax.plot(omegas, abs(sigma_analysis), marker="1", label=r"$|\Sigma|$")
+    fig, ax = pplt.subplots(width="35em", height="30em")
+    ax.plot(
+        omegas,
+        convergence_rates,
+        color="k",
+        marker="x",
+        ls="none",
+        label=r"measured CR",
+    )
+    ax.plot(
+        omegas,
+        abs(sigma_analysis),
+        marker="o",
+        mfc="none",
+        ls="none",
+        color="k",
+        label=r"$|\Sigma|$",
+    )
     ax.format(
         xlabel=r"$\omega$",
         ylabel=r"$|\Sigma|$",
-        title="Experimental Convergence Rate",
         xlim=[0, 1],
         ylim=[0, 1],
     )
-    fig.legend(ncols=1)
-    fig.savefig("convergence_rates.png")
+    ax.legend(ncols=1)
+    fig.savefig(plotting_dir / "convergence_rates.pdf")
