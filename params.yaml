@@ -10,10 +10,11 @@ h_0: 1.0
 t_0: 0
 t_end: 1
 
-N: 10
+N: 15
 M: 20
 
 bc_type: dirichlet
+dirichlet_value: 0.0
 ic_type: linear
 
 precice_config_template: "coupling/precice-config.xml.j2"
