@@ -10,7 +10,7 @@ from dune.fem.space import lagrange
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
-from coupling.setup_simulation import BoundaryCondition, Params
+from coupling.setup_simulation import BoundaryCondition, InitialCondition, Params
 
 
 class Groundwater:
@@ -34,7 +34,14 @@ class Groundwater:
         x_func = uflFunction(gridView, name="x", order=1, ufl=x)
         self.x_axis = self.space.interpolate(x_func).as_numpy
 
-        initial = (self.height - params.dirichlet_value) / params.L * x[0] + self.height
+        if params.ic_type == InitialCondition.linear:
+            initial = (self.height - params.dirichlet_value) / params.L * x[
+                0
+            ] + self.height
+        elif params.ic_type == InitialCondition.sin:
+            initial = (
+                params.L / ufl.pi * ufl.sin(ufl.pi / params.L * x[0]) + self.height
+            )
         self.psi_h.interpolate(initial)
         self.psi_h_n = self.psi_h.copy(name="previous")
 

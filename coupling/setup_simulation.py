@@ -13,6 +13,11 @@ class BoundaryCondition(Enum):
     dirichlet = "dirichlet"
 
 
+class InitialCondition(Enum):
+    linear = "linear"
+    sin = "sin"
+
+
 @dataclass
 class Params:
     tolerance: float
@@ -29,7 +34,8 @@ class Params:
     h_0: float
     precice_config: str | Path
     precice_config_template: str | Path
-    bc_type: str
+    bc_type: str | BoundaryCondition
+    ic_type: str | InitialCondition
     dirichlet_value: float = 0.0
     dt: float = field(init=False)
     dz: float = field(init=False)
@@ -40,6 +46,7 @@ class Params:
         self.precice_config = Path(self.precice_config)
         self.precice_config_template = Path(self.precice_config_template)
         self.bc_type = BoundaryCondition(self.bc_type)
+        self.ic_type = InitialCondition(self.ic_type)
         assert self.precice_config_template.exists()
 
 

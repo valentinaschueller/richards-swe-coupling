@@ -1,6 +1,6 @@
 from coupling.analysis import compute_coupling_behavior
 from coupling.process_results import compute_convergence_rate
-from coupling.setup_simulation import BoundaryCondition, load_params
+from coupling.setup_simulation import BoundaryCondition, InitialCondition, load_params
 from coupling.simulation import run_coupled_simulation
 
 convergence_rate = None
@@ -98,3 +98,23 @@ def test_bc_sensitivity_grid_size():
 
     assert (error_fine_fd - error_coarse_fd) < 1e-4
     assert (error_fine_nf - error_coarse_nf) < 1e-4
+
+
+def test_ic_sensitivity():
+    yaml_file = "tests/test_params.yaml"
+    params = load_params(yaml_file)
+    cvg_logfile = "precice-RiverSolver-convergence.log"
+
+    S = compute_coupling_behavior(params.K, params.c, params.L, params.dt, params.M)[1]
+    analytical_cvg_rate = abs(S)
+
+    params.ic_type = InitialCondition.linear
+    run_coupled_simulation(params)
+    cvg_rate_linear = compute_convergence_rate(cvg_logfile)
+
+    params.ic_type = InitialCondition.sin
+    run_coupled_simulation(params)
+    cvg_rate_sin = compute_convergence_rate(cvg_logfile)
+
+    assert abs(cvg_rate_linear - analytical_cvg_rate) < 1e-8
+    assert abs(cvg_rate_sin - analytical_cvg_rate) < 1e-8

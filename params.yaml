@@ -14,7 +14,7 @@ N: 10
 M: 20
 
 bc_type: dirichlet
-dirichlet_value: 1.0
+ic_type: linear
 
 precice_config_template: "coupling/precice-config.xml.j2"
 precice_config: "coupling/precice-config.xml"
