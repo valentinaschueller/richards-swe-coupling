@@ -4,13 +4,13 @@ omega: 1
 coupling_scheme: "serial-implicit"
 
 K: 1.0
-c: 1.0
+c: 500
 L: 1.0
 h_0: 1.0
 t_0: 0
-t_end: 1
+t_end: 0.1
 
-N: 15
+N: 1
 M: 20
 
 bc_type: dirichlet
