@@ -41,14 +41,10 @@ if __name__ == "__main__":
             omega_opt[grid_index, c_index] = omega
             S_abs[grid_index, c_index] = abs(S)
 
-            print("\033[1m" + f"Values (c, dz): {c}, {grid_size}" + "\033[0m")
-            if params.c < 1e3:
-                run_coupled_simulation(params)
-                CR[grid_index, c_index] = compute_convergence_rate(
-                    "precice-RiverSolver-convergence.log"
-                )
-            else:
-                CR[grid_index, c_index] = np.nan
+            run_coupled_simulation(params)
+            CR[grid_index, c_index] = compute_convergence_rate(
+                "precice-RiverSolver-convergence.log"
+            )
 
     omega_exp = 1 / (1 + CR)
 
@@ -87,7 +83,3 @@ if __name__ == "__main__":
             title=rf"$\Delta z$={grid_size_str[grid_index]}",
         )
     fig.savefig(plotting_dir / "varying_physics.pdf")
-
-    print(S_abs)
-    print(CR)
-    print(abs(S_abs - CR))
