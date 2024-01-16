@@ -1,10 +1,10 @@
 tolerance: 1e-3
-max_iterations: 15
+max_iterations: 5
 omega: 1
 coupling_scheme: "serial-implicit"
 
 K: 1.0
-c: 500
+c: 1.0
 L: 1.0
 h_0: 1.0
 t_0: 0
