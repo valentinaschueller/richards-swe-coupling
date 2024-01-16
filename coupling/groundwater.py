@@ -5,8 +5,10 @@ import precice
 import ufl
 import xarray as xr
 from dune.fem.function import uflFunction
-from dune.fem.scheme import galerkin
+from dune.fem.operator import galerkin as galerkin_operator
+from dune.fem.scheme import galerkin as galerkin_scheme
 from dune.fem.space import lagrange
+from dune.fem.utility import pointSample
 from dune.grid import structuredGrid
 from dune.ufl import Constant, DirichletBC
 
@@ -63,7 +65,15 @@ class Groundwater:
         if params.bc_type == BoundaryCondition.no_flux:
             rhs = (-1 * v * ufl.conditional(x[0] <= (-params.L + 1e-8), -1, 0)) * ufl.ds
 
-        self.scheme = galerkin([a == self.dt * rhs, *dirichlet], solver="cg")
+        self.scheme = galerkin_scheme([a == self.dt * rhs, *dirichlet], solver="cg")
+
+        # Weak form of the flux
+        flux_expression = (
+            -ufl.dot(self.c * (psi - self.psi_h_n), v) / self.dt
+            - self.K * ufl.dot(ufl.grad(psi) + ufl.as_vector([1]), ufl.grad(v))
+        ) * ufl.dx
+        self.flux_operator = galerkin_operator(flux_expression)
+        self.flux_sol = self.space.interpolate(initial, name="flux_sol")
 
         self.scheme.model.dt = params.dt
         self.scheme.model.time = params.t_0
@@ -77,16 +87,8 @@ class Groundwater:
         self._compute_flux()
 
     def _compute_flux(self) -> None:
-        M = (self.c.value * self.dz / 6) * np.array([1, 2])
-        A = self.K.value / self.dz * np.array([-1, 1])
-        psi_now = self.psi_h.as_numpy[-2:]
-        psi_n = self.psi_h_n.as_numpy[-2:]
-        v_s = -(
-            np.dot(M, (psi_now - psi_n)) / self.dt.value
-            + np.dot(A, psi_now)
-            + self.K.value
-        )
-        self.flux = v_s
+        self.flux_operator(self.psi_h, self.flux_sol)
+        self.flux = pointSample(self.flux_sol, [0.0])
 
     def solve(self, dt: float) -> None:
         self.psi_h_n.assign(self.psi_h)
