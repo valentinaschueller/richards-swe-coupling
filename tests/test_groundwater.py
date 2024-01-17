@@ -17,7 +17,7 @@ def _grad_based_flux(groundwater: Groundwater):
 def test_flux_computation():
     params = load_params("tests/test_params.yaml")
     groundwater = Groundwater(params)
-    gw_flux = groundwater.flux
+    gw_flux = groundwater.interface_flux
     grad_based_flux = _grad_based_flux(groundwater)
     assert gw_flux * grad_based_flux > 0
     assert abs(gw_flux - grad_based_flux) < 0.1

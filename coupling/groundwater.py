@@ -30,7 +30,7 @@ class Groundwater:
 
         x = ufl.SpatialCoordinate(self.space)
         psi = ufl.TrialFunction(self.space)
-        v = ufl.TestFunction(self.space)
+        phi = ufl.TestFunction(self.space)
 
         # get x-values for plotting/visualization
         x_func = uflFunction(gridView, name="x", order=1, ufl=x)
@@ -47,10 +47,9 @@ class Groundwater:
         self.psi_h.interpolate(initial)
         self.psi_h_n = self.psi_h.copy(name="previous")
 
-        a = (
-            ufl.dot(self.c * (psi - self.psi_h_n), v)
-            + self.dt * ufl.inner(self.K * ufl.grad(psi), ufl.grad(v))
-        ) * ufl.dx
+        mass_term = ufl.dot(self.c * (psi - self.psi_h_n), phi)
+        stiffness_term = self.dt * self.K * ufl.inner(ufl.grad(psi), ufl.grad(phi))
+        bilinear_form = (mass_term + stiffness_term) * ufl.dx
 
         # Set boundary conditions
         rhs = 0
@@ -63,17 +62,20 @@ class Groundwater:
             )
             dirichlet.append(dbc_bottom)
         if params.bc_type == BoundaryCondition.no_flux:
-            rhs = (-1 * v * ufl.conditional(x[0] <= (-params.L + 1e-8), -1, 0)) * ufl.ds
+            rhs = (
+                -1 * phi * ufl.conditional(x[0] <= (-params.L + 1e-8), -1, 0)
+            ) * ufl.ds
 
-        self.scheme = galerkin_scheme([a == self.dt * rhs, *dirichlet], solver="cg")
+        self.scheme = galerkin_scheme(
+            [bilinear_form == self.dt * rhs, *dirichlet], solver="cg"
+        )
 
         # Weak form of the flux
-        flux_expression = (
-            -ufl.dot(self.c * (psi - self.psi_h_n), v) / self.dt
-            - self.K * ufl.dot(ufl.grad(psi) + ufl.as_vector([1]), ufl.grad(v))
+        weak_form_flux = (
+            -mass_term / self.dt - stiffness_term / self.dt - self.K * ufl.grad(phi)[0]
         ) * ufl.dx
-        self.flux_operator = galerkin_operator(flux_expression)
-        self.flux_sol = self.space.interpolate(initial, name="flux_sol")
+        self.flux_operator = galerkin_operator(weak_form_flux)
+        self.vertical_flux = self.space.interpolate(initial, name="vertical_flux")
 
         self.scheme.model.dt = params.dt
         self.scheme.model.time = params.t_0
@@ -87,8 +89,8 @@ class Groundwater:
         self._compute_flux()
 
     def _compute_flux(self) -> None:
-        self.flux_operator(self.psi_h, self.flux_sol)
-        self.flux = pointSample(self.flux_sol, [0.0])
+        self.flux_operator(self.psi_h, self.vertical_flux)
+        self.interface_flux = pointSample(self.vertical_flux, [0.0])
 
     def solve(self, dt: float) -> None:
         self.psi_h_n.assign(self.psi_h)
@@ -157,7 +159,7 @@ def simulate_groundwater(params: Params):
 
         groundwater.height.value = interface.read_scalar_data(height_id, vertex_id)
         groundwater.solve(dt)
-        interface.write_scalar_data(flux_id, vertex_id, groundwater.flux)
+        interface.write_scalar_data(flux_id, vertex_id, groundwater.interface_flux)
 
         precice_dt = interface.advance(dt)
 
