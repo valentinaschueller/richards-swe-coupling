@@ -44,6 +44,8 @@
       <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver" initialize="yes"/>
       {%- if "implicit" in coupling_scheme %}
       <absolute-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
+      <absolute-convergence-measure limit="{{tolerance}}" data="Flux" mesh="RiverMesh" />
+      <min-iteration-convergence-measure min-iterations="{{min_iterations}}" data="Height" mesh="RiverMesh"/>
       <max-iterations value="{{max_iterations}}" />
       <acceleration:constant>
         <relaxation value="{{omega}}" />

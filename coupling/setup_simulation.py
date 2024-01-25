@@ -22,6 +22,7 @@ class InitialCondition(Enum):
 class Params:
     tolerance: float
     max_iterations: int
+    min_iterations: int
     coupling_scheme: str
     omega: float
     t_0: float
@@ -67,6 +68,7 @@ def render(params: Params) -> None:
                 dt=params.dt,
                 tolerance=params.tolerance,
                 max_iterations=params.max_iterations,
+                min_iterations=params.min_iterations,
                 omega=params.omega,
             )
         )
