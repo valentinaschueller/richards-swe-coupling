@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -56,4 +57,5 @@ if __name__ == "__main__":
         ylim=[0, 1],
     )
     ax.legend(ncols=1)
-    fig.savefig(plotting_dir / "convergence_rates.pdf")
+    with warnings.catch_warnings(action="ignore"):
+        fig.savefig(plotting_dir / "convergence_rates.pdf")
