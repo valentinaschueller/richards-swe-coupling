@@ -35,11 +35,13 @@ def compute_convergence_rate(convergence_log: Path):
     time_windows = df["TimeWindow"].drop_duplicates().to_numpy()
     cvg_rates = np.zeros(len(time_windows))
     for index, tw in enumerate(time_windows):
-        resabs_values = df.loc[df["TimeWindow"] == tw]["ResAbs(Height)"].to_numpy()
-        if len(resabs_values) == 1:
+        resabs_height = df.loc[df["TimeWindow"] == tw]["ResAbs(Height)"].to_numpy()
+        if len(resabs_height) < 3:
             cvg_rates[index] = np.nan
             continue
-        cvg_rates[index] = np.mean(resabs_values[1:] / resabs_values[:-1])
+        resabs_flux = df.loc[df["TimeWindow"] == tw]["ResAbs(Flux)"].to_numpy()
+        resabs_total = np.sqrt(resabs_height**2 + resabs_flux**2)
+        cvg_rates[index] = np.mean(resabs_total[2:] / resabs_total[1:-1])
 
     cvg_rates = np.ma.masked_invalid(cvg_rates)
     return np.mean(cvg_rates)
