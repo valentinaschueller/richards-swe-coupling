@@ -23,12 +23,17 @@ class Groundwater:
         self.psi_h = self.space.interpolate(0, name="psi_h")
         self.dz = params.L / params.M
 
-        self.c = Constant(params.c, name="c")
+        c = Constant(params.c, name="c")
         self.K = Constant(params.K, name="K")
         self.dt = Constant(params.dt, name="dt")
         self.height = Constant(params.h_0, name="height")
 
         x = ufl.SpatialCoordinate(self.space)
+        cutoff_point = 0.0
+        if cutoff_point == 0.0:
+            self.c = c
+        else:
+            self.c = ufl.conditional(x[0] > cutoff_point, x[0] * (c / cutoff_point), c)
         psi = ufl.TrialFunction(self.space)
         phi = ufl.TestFunction(self.space)
 
@@ -130,7 +135,7 @@ def simulate_groundwater(params: Params):
     participant_name = "GroundwaterSolver"
     solver_process_index = 0
     solver_process_size = 1
-    interface = precice.Interface(
+    participant = precice.Participant(
         participant_name,
         str(params.precice_config),
         solver_process_index,
@@ -138,36 +143,36 @@ def simulate_groundwater(params: Params):
     )
 
     mesh_name = "GroundwaterMesh"
-    mesh_id = interface.get_mesh_id(mesh_name)
-    dimensions = interface.get_dimensions()
+    dimensions = participant.get_mesh_dimensions(mesh_name)
     vertex = np.zeros(dimensions)
-    vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
+    vertex_ids = [participant.set_mesh_vertex(mesh_name, vertex)]
 
-    height_id = interface.get_data_id("Height", mesh_id)
-    flux_id = interface.get_data_id("Flux", mesh_id)
+    write_data_name = "Flux"
+    read_data_name = "Height"
 
     groundwater = Groundwater(params)
 
-    precice_dt = interface.initialize()
-    interface.initialize_data()
+    participant.initialize()
 
-    while interface.is_coupling_ongoing():
-        if interface.is_action_required(precice.action_write_iteration_checkpoint()):
+    while participant.is_coupling_ongoing():
+        if participant.requires_writing_checkpoint():
             groundwater.save_state()
-            interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
+
+        precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
 
-        groundwater.height.value = interface.read_scalar_data(height_id, vertex_id)
+        groundwater.height.value = participant.read_data(mesh_name, read_data_name)
         groundwater.solve(dt)
-        interface.write_scalar_data(flux_id, vertex_id, groundwater.interface_flux)
+        participant.write_data(
+            mesh_name, write_data_name, vertex_ids, [groundwater.interface_flux]
+        )
 
-        precice_dt = interface.advance(dt)
+        precice_dt = participant.advance(dt)
 
-        if interface.is_action_required(precice.action_read_iteration_checkpoint()):
+        if participant.requires_writing_checkpoint():
             groundwater.load_state()
-            interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
         else:
             groundwater.end_time_step()
 
-    interface.finalize()
+    participant.finalize()
     groundwater.save_output("groundwater.nc")
