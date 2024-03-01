@@ -65,12 +65,18 @@ def simulate_river(params: Params):
     while participant.is_coupling_ongoing():
         if participant.requires_writing_checkpoint():
             river.save_state()
+
+        t = river.time
         precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
 
-        flux = participant.read_data(mesh_name, read_data_name)
+        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, t + dt)
+        flux = read_data[0]
+
         river.solve(dt, flux)
-        participant.write_data(mesh_name, write_data_name, vertex_ids, [river.height])
+
+        write_data = [river.height]
+        participant.write_data(mesh_name, write_data_name, vertex_ids, write_data)
 
         participant.advance(dt)
 

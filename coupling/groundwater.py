@@ -160,16 +160,18 @@ def simulate_groundwater(params: Params):
 
         precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
+        t = groundwater.scheme.model.time
+        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, t + dt)
+        groundwater.height.value = read_data[0]
 
-        groundwater.height.value = participant.read_data(mesh_name, read_data_name)
         groundwater.solve(dt)
-        participant.write_data(
-            mesh_name, write_data_name, vertex_ids, [groundwater.interface_flux]
-        )
+
+        write_data = [groundwater.interface_flux]
+        participant.write_data(mesh_name, write_data_name, vertex_ids, write_data)
 
         precice_dt = participant.advance(dt)
 
-        if participant.requires_writing_checkpoint():
+        if participant.requires_reading_checkpoint():
             groundwater.load_state()
         else:
             groundwater.end_time_step()
