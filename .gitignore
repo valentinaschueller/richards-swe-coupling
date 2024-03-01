@@ -106,9 +106,9 @@ cython_debug/
 
 # preCICE output
 **/*-events-summary.log
-**/*-events.json
 **/*-iterations.log
 **/*-convergence.log
+**/*.json
 
 # Simulation output
 *.xml
