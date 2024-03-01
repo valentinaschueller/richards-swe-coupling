@@ -66,11 +66,10 @@ def simulate_river(params: Params):
         if participant.requires_writing_checkpoint():
             river.save_state()
 
-        t = river.time
         precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
 
-        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, t + dt)
+        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, dt)
         flux = read_data[0]
 
         river.solve(dt, flux)

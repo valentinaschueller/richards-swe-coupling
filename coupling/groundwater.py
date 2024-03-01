@@ -160,8 +160,7 @@ def simulate_groundwater(params: Params):
 
         precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
-        t = groundwater.scheme.model.time
-        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, t + dt)
+        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, dt)
         groundwater.height.value = read_data[0]
 
         groundwater.solve(dt)
