@@ -4,7 +4,7 @@ import numpy as np
 import precice
 import ufl
 import xarray as xr
-from dune.fem.function import uflFunction
+from dune.fem.function import gridFunction
 from dune.fem.operator import galerkin as galerkin_operator
 from dune.fem.scheme import galerkin as galerkin_scheme
 from dune.fem.space import lagrange
@@ -38,7 +38,7 @@ class Groundwater:
         phi = ufl.TestFunction(self.space)
 
         # get x-values for plotting/visualization
-        x_func = uflFunction(gridView, name="x", order=1, ufl=x)
+        x_func = gridFunction(x, gridView, name="x", order=1)
         self.x_axis = self.space.interpolate(x_func).as_numpy
 
         if params.ic_type == InitialCondition.linear:
