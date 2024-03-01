@@ -39,7 +39,7 @@ def simulate_river(params: Params):
     participant_name = "RiverSolver"
     solver_process_index = 0
     solver_process_size = 1
-    interface = precice.Interface(
+    participant = precice.Participant(
         participant_name,
         str(params.precice_config),
         solver_process_index,
@@ -47,41 +47,43 @@ def simulate_river(params: Params):
     )
 
     mesh_name = "RiverMesh"
-    mesh_id = interface.get_mesh_id(mesh_name)
-    dimensions = interface.get_dimensions()
+    dimensions = participant.get_mesh_dimensions(mesh_name)
     vertex = np.zeros(dimensions)
-    vertex_id = interface.set_mesh_vertex(mesh_id, vertex)
 
-    height_id = interface.get_data_id("Height", mesh_id)
-    flux_id = interface.get_data_id("Flux", mesh_id)
+    vertex_ids = [participant.set_mesh_vertex(mesh_name, vertex)]
+
+    read_data_name = "Flux"
+    write_data_name = "Height"
 
     river = River(params)
 
-    precice_dt = interface.initialize()
+    if participant.requires_initial_data():
+        participant.write_data(mesh_name, write_data_name, vertex_ids, [params.h_0])
 
-    if interface.is_action_required(precice.action_write_initial_data()):
-        interface.write_scalar_data(height_id, vertex_id, params.h_0)
-        interface.mark_action_fulfilled(precice.action_write_initial_data())
+    participant.initialize()
 
-    interface.initialize_data()
-
-    while interface.is_coupling_ongoing():
-        if interface.is_action_required(precice.action_write_iteration_checkpoint()):
+    while participant.is_coupling_ongoing():
+        if participant.requires_writing_checkpoint():
             river.save_state()
-            interface.mark_action_fulfilled(precice.action_write_iteration_checkpoint())
+
+        t = river.time
+        precice_dt = participant.get_max_time_step_size()
         dt = min(params.dt, precice_dt)
 
-        flux = interface.read_scalar_data(flux_id, vertex_id)
+        read_data = participant.read_data(mesh_name, read_data_name, vertex_ids, t + dt)
+        flux = read_data[0]
+
         river.solve(dt, flux)
-        interface.write_scalar_data(height_id, vertex_id, river.height)
 
-        precice_dt = interface.advance(dt)
+        write_data = [river.height]
+        participant.write_data(mesh_name, write_data_name, vertex_ids, write_data)
 
-        if interface.is_action_required(precice.action_read_iteration_checkpoint()):
+        participant.advance(dt)
+
+        if participant.requires_reading_checkpoint():
             river.load_state()
-            interface.mark_action_fulfilled(precice.action_read_iteration_checkpoint())
         else:
             river.end_time_step()
 
-    interface.finalize()
+    participant.finalize()
     river.save_output("river.nc")

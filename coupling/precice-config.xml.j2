@@ -2,57 +2,53 @@
 
 <precice-configuration>
 
-  <solver-interface dimensions="2">
+  <data:scalar name="Height"/>
+  <data:scalar name="Flux"/>
 
-    <data:scalar name="Height"/>
-    <data:scalar name="Flux"/>
+  <mesh name="GroundwaterMesh" dimensions="2">
+    <use-data name="Height"/>
+    <use-data name="Flux"/>
+  </mesh>
 
-    <mesh name="GroundwaterMesh">
-      <use-data name="Height"/>
-      <use-data name="Flux"/>
-    </mesh>
+  <mesh name="RiverMesh" dimensions="2">
+    <use-data name="Height"/>
+    <use-data name="Flux"/>
+  </mesh>
 
-    <mesh name="RiverMesh">
-      <use-data name="Height"/>
-      <use-data name="Flux"/>
-    </mesh>
+  <participant name="GroundwaterSolver">
+    <provide-mesh name="GroundwaterMesh"/>
+    <receive-mesh name="RiverMesh" from="RiverSolver"/>
+    <write-data name="Flux" mesh="GroundwaterMesh"/>
+    <read-data  name="Height" mesh="GroundwaterMesh"/>
+    <mapping:nearest-neighbor direction="write" from="GroundwaterMesh"
+                              to="RiverMesh" constraint="conservative"/>
+    <mapping:nearest-neighbor direction="read" from="RiverMesh"
+                              to="GroundwaterMesh" constraint="consistent"/>
+  </participant>
 
-    <participant name="GroundwaterSolver">
-      <use-mesh name="GroundwaterMesh" provide="yes"/>
-      <use-mesh name="RiverMesh" from="RiverSolver"/>
-      <write-data name="Flux" mesh="GroundwaterMesh"/>
-      <read-data  name="Height" mesh="GroundwaterMesh"/>
-      <mapping:nearest-neighbor direction="write" from="GroundwaterMesh"
-                                to="RiverMesh" constraint="conservative"/>
-      <mapping:nearest-neighbor direction="read" from="RiverMesh"
-                                to="GroundwaterMesh" constraint="consistent"/>
-    </participant>
+  <participant name="RiverSolver">
+    <provide-mesh name="RiverMesh"/>
+    <write-data name="Height" mesh="RiverMesh"/>
+    <read-data  name="Flux" mesh="RiverMesh"/>
+  </participant>
 
-    <participant name="RiverSolver">
-      <use-mesh name="RiverMesh" provide="yes"/>
-      <write-data name="Height" mesh="RiverMesh"/>
-      <read-data  name="Flux" mesh="RiverMesh"/>
-    </participant>
+  <m2n:sockets acceptor="GroundwaterSolver" connector="RiverSolver"/>
 
-    <m2n:sockets from="GroundwaterSolver" to="RiverSolver"/>
-
-    <coupling-scheme:{{coupling_scheme}}>
-      <participants first="GroundwaterSolver" second="RiverSolver"/>
-      <max-time-windows value="{{N}}" />
-      <time-window-size value="{{dt}}" />
-      <exchange data="Flux" mesh="RiverMesh" from="GroundwaterSolver" to="RiverSolver"/>
-      <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver" initialize="yes"/>
-      {%- if "implicit" in coupling_scheme %}
-      <absolute-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
-      <absolute-convergence-measure limit="{{tolerance}}" data="Flux" mesh="RiverMesh" />
-      <min-iteration-convergence-measure min-iterations="{{min_iterations}}" data="Height" mesh="RiverMesh"/>
-      <max-iterations value="{{max_iterations}}" />
-      <acceleration:constant>
-        <relaxation value="{{omega}}" />
-      </acceleration:constant>
-      {%- endif %}
-    </coupling-scheme:{{coupling_scheme}}>
-
-  </solver-interface>
+  <coupling-scheme:{{coupling_scheme}}>
+    <participants first="GroundwaterSolver" second="RiverSolver"/>
+    <max-time-windows value="{{N}}" />
+    <time-window-size value="{{dt}}" />
+    <exchange data="Flux" mesh="RiverMesh" from="GroundwaterSolver" to="RiverSolver"/>
+    <exchange data="Height" mesh="RiverMesh" from="RiverSolver" to="GroundwaterSolver" initialize="yes"/>
+    {%- if "implicit" in coupling_scheme %}
+    <absolute-convergence-measure limit="{{tolerance}}" data="Height" mesh="RiverMesh"/>
+    <absolute-convergence-measure limit="{{tolerance}}" data="Flux" mesh="RiverMesh" />
+    <min-iterations value="{{min_iterations}}"/>
+    <max-iterations value="{{max_iterations}}" />
+    <acceleration:constant>
+      <relaxation value="{{omega}}" />
+    </acceleration:constant>
+    {%- endif %}
+  </coupling-scheme:{{coupling_scheme}}>
 
 </precice-configuration>
