@@ -1,3 +1,4 @@
+import warnings
 from pathlib import Path
 
 import numpy as np
@@ -15,7 +16,8 @@ def plot_river(source: Path, target: Path):
         ylabel="$h(t)$",
         title="River water height over time",
     )
-    fig.savefig(target)
+    with warnings.catch_warnings(action="ignore"):
+        fig.savefig(target)
 
 
 def plot_groundwater(source: Path, target: Path):
@@ -27,11 +29,12 @@ def plot_groundwater(source: Path, target: Path):
         ylabel=r"$\psi(z)$",
         title=r"Groundwater potential $\psi$ at different $t$",
     )
-    fig.savefig(target)
+    with warnings.catch_warnings(action="ignore"):
+        fig.savefig(target)
 
 
 def compute_convergence_rate(convergence_log: Path):
-    df = pd.read_csv(convergence_log, delim_whitespace=True)
+    df = pd.read_csv(convergence_log, sep="\s+")
     time_windows = df["TimeWindow"].drop_duplicates().to_numpy()
     cvg_rates = np.zeros(len(time_windows))
     for index, tw in enumerate(time_windows):
@@ -41,7 +44,8 @@ def compute_convergence_rate(convergence_log: Path):
             continue
         resabs_flux = df.loc[df["TimeWindow"] == tw]["ResAbs(Flux)"].to_numpy()
         resabs_total = np.sqrt(resabs_height**2 + resabs_flux**2)
-        cvg_rates[index] = np.mean(resabs_total[2:] / resabs_total[1:-1])
+        mean_cvg_rate_total = np.mean(resabs_total[2:] / resabs_total[1:-1])
+        cvg_rates[index] = mean_cvg_rate_total
 
     cvg_rates = np.ma.masked_invalid(cvg_rates)
     return np.mean(cvg_rates)
