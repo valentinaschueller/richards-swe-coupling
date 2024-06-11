@@ -20,6 +20,7 @@ if __name__ == "__main__":
     assert params.L == 1
     assert params.N == 1
     assert params.c == 1
+    assert params.K == 1
 
     c_values = 10.0 ** np.arange(-5, 6)
     grid_sizes = np.array([1 / 20, 1 / 500])
