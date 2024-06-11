@@ -2,6 +2,8 @@
 
 Simulate 1D groundwater flow coupled to an ODE for shallow water height, using DUNE and preCICE.
 
+**Archived Repository: Code is now part of [this repository](https://gitlab.maths.lu.se/robertk/coupling).**
+
 ## Dependencies
 
 - [dune-fem](https://pypi.org/project/dune-fem/), which requires, among other things
