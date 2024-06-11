@@ -13,8 +13,12 @@ def get_b(K: float, c: float, dt: float, dz: float) -> float:
 
 def get_alpha(a: float, b: float, L: float, M: int, dz: float) -> float:
     j = np.arange(1, M)
+    if isinstance(a, np.ndarray):
+        assert a.ndim == b.ndim
+        j = j[:, *(a.ndim * [None])]
     sum = np.sum(
-        np.sin(j * np.pi * dz / L) ** 2 / (0.5 * a - b * np.cos(j * np.pi * dz / L))
+        np.sin(j * np.pi * dz / L) ** 2 / (0.5 * a - b * np.cos(j * np.pi * dz / L)),
+        axis=0,
     )
     alpha = dz / L * sum
     return alpha
@@ -22,7 +26,7 @@ def get_alpha(a: float, b: float, L: float, M: int, dz: float) -> float:
 
 def get_S(a: float, b: float, alpha: float, dz: float) -> float:
     S = b**2 * alpha - 0.5 * a
-    return float(S)
+    return S
 
 
 def get_omega_opt(S: float) -> float:
@@ -55,7 +59,7 @@ def compute_coupling_behavior(
     dz = L / M
     a = get_a(K, c, dt, dz)
     b = get_b(K, c, dt, dz)
-    alpha = get_alpha(a, b, L, M, dz)
+    alpha = np.vectorize(get_alpha)(a, b, L, M, dz)
     S = get_S(a, b, alpha, dz)
     omega_opt = get_omega_opt(S)
     return alpha, S, omega_opt
